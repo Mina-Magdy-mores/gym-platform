@@ -18,7 +18,7 @@
         <style>
             body {
                 font-family: 'Outfit', sans-serif;
-                background-color: #0b0b0c;
+                background-color: #181a20;
                 color: #ffffff;
             }
             .neon-accent {
@@ -45,7 +45,7 @@
         </style>
     </head>
     <body class="antialiased text-white">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative overflow-hidden bg-[#0b0b0c]">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative overflow-hidden bg-[#181a20]">
             <!-- Decorative circles -->
             <div class="neon-blur-circle top-10 -left-20"></div>
             <div class="neon-blur-circle bottom-10 -right-20"></div>

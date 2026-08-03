@@ -18,7 +18,7 @@
         <style>
             body {
                 font-family: 'Outfit', sans-serif;
-                background-color: #0b0b0c;
+                background-color: #181a20;
                 color: #ffffff;
             }
             .neon-accent {
@@ -44,7 +44,7 @@
             }
         </style>
     </head>
-    <body class="antialiased text-white min-h-screen bg-[#0b0b0c] relative overflow-x-hidden">
+    <body class="antialiased text-white min-h-screen bg-[#181a20] relative overflow-x-hidden">
         <!-- Background Glow Orbs -->
         <div class="neon-blur-circle top-10 -left-20"></div>
         <div class="neon-blur-circle bottom-20 -right-20"></div>

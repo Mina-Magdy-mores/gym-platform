@@ -3,18 +3,33 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center gap-6">
-                <!-- Logo -->
+                <!-- Logo Links to Welcome Landing Page -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="text-xl font-black uppercase tracking-wider">
+                    <a href="{{ url('/') }}" class="text-xl font-black uppercase tracking-wider">
                         <span class="neon-accent">FIT</span><span>CLUB</span>
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:flex">
+                <div class="hidden space-x-6 sm:-my-px sm:flex items-center">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white hover:text-[#ff5b00]">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('plans.index')" :active="request()->routeIs('plans.index')" class="text-white hover:text-[#ff5b00]">
+                        Plans & Schedules
+                    </x-nav-link>
+                    <x-nav-link :href="route('bookings.index')" :active="request()->routeIs('bookings.index')" class="text-white hover:text-[#ff5b00]">
+                        Trainer Bookings
+                    </x-nav-link>
+
+                    @role('admin')
+                        <a href="{{ route('admin.plans.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.plans.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-shield-star-line text-sm"></i> Admin Plans
+                        </a>
+                        <a href="{{ route('admin.schedules.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.schedules.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-time-line text-sm"></i> Admin Schedules
+                        </a>
+                    @endrole
                 </div>
             </div>
 
@@ -41,6 +56,15 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+
+                        @role('admin')
+                            <x-dropdown-link :href="route('admin.plans.index')">
+                                Manage Subscription Plans
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('admin.schedules.index')">
+                                Manage Gym Schedules
+                            </x-dropdown-link>
+                        @endrole
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -71,6 +95,20 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('plans.index')" :active="request()->routeIs('plans.index')">
+                Plans & Schedules
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('bookings.index')" :active="request()->routeIs('bookings.index')">
+                Trainer Bookings
+            </x-responsive-nav-link>
+            @role('admin')
+                <x-responsive-nav-link :href="route('admin.plans.index')">
+                    Admin Plans
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.schedules.index')">
+                    Admin Schedules
+                </x-responsive-nav-link>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->

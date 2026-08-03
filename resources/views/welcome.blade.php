@@ -9,14 +9,18 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 
-        <!-- Styles / Scripts -->
+        <!-- Scripts & Tailwind -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- ScrollReveal JS -->
+        <script src="https://unpkg.com/scrollreveal"></script>
 
         <style>
             body {
                 font-family: 'Outfit', sans-serif;
-                background-color: #0b0b0c;
+                background-color: #181a20;
                 color: #ffffff;
                 overflow-x: hidden;
             }
@@ -61,17 +65,72 @@
             }
         </style>
     </head>
-    <body class="antialiased min-h-screen flex flex-col justify-between">
+    <body class="antialiased min-h-screen flex flex-col justify-between bg-[#181a20] relative">
 
         <!-- Circles for decoration background -->
         <div class="neon-blur-circle top-10 -left-20"></div>
         <div class="neon-blur-circle bottom-40 -right-20"></div>
 
+        <!-- Reverted Uniform Linear Speed SVG Mask Overlay -->
+        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-85 w-full h-full">
+            <svg class="w-full h-full" viewBox="0 0 1400 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+
+                <defs>
+                    <!-- 1. SVG Mask: ECG Line path as the Clipping Mask -->
+                    <mask id="ecgLineMask">
+                        <path d="M -300 200 L 500 200 L 530 140 L 560 260 L 590 80 L 620 310 L 650 160 L 680 230 L 710 200 L 1700 200" 
+                              fill="none" 
+                              stroke="#ffffff" 
+                              stroke-width="4.8" 
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+                    </mask>
+
+                    <!-- 2. Compact 280px Beam Gradient -->
+                    <linearGradient id="cometMaskGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <!-- Faint Tail (0% to 75%) -->
+                        <stop offset="0%" stop-color="#ff5b00" stop-opacity="0.0" />
+                        <stop offset="25%" stop-color="#ff5b00" stop-opacity="0.15" />
+                        <stop offset="60%" stop-color="#ff6b00" stop-opacity="0.45" />
+                        <stop offset="78%" stop-color="#ff8b00" stop-opacity="0.75" />
+                        
+                        <!-- Glowing White Core Head Tip (85% to 95%) -->
+                        <stop offset="88%" stop-color="#ffa000" stop-opacity="1.0" />
+                        <stop offset="94%" stop-color="#ffffff" stop-opacity="1.0" />
+                        
+                        <!-- Smooth Fade Out (96% to 100%) -->
+                        <stop offset="97%" stop-color="#ff7b00" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#ff5b00" stop-opacity="0.0" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Base Dim Balanced Center Line -->
+                <path d="M -300 200 L 500 200 L 530 140 L 560 260 L 590 80 L 620 310 L 650 160 L 680 230 L 710 200 L 1700 200" 
+                      fill="none" 
+                      stroke="#ff5b00" 
+                      stroke-width="2.5" 
+                      stroke-opacity="0.25" />
+
+                <!-- 3. Masked Beam Back to Reverted Uniform Linear Speed -->
+                <g mask="url(#ecgLineMask)" style="filter: drop-shadow(0 0 10px #ff5b00) drop-shadow(0 0 20px rgba(255, 91, 0, 0.7));">
+                    <rect x="0" y="0" width="280" height="400" fill="url(#cometMaskGradient)">
+                        <animateTransform attributeName="transform" 
+                                          type="translate" 
+                                          calcMode="linear"
+                                          values="-280,0; 1420,0; 1420,0" 
+                                          keyTimes="0; 0.8888; 1" 
+                                          dur="4.5s" 
+                                          repeatCount="indefinite" />
+                    </rect>
+                </g>
+            </svg>
+        </div>
+
         <!-- Navbar Header -->
         <header class="fixed top-0 left-0 right-0 w-full z-50 glass-card px-6 py-4 transition-all duration-300">
             <div class="max-w-6xl mx-auto flex items-center justify-between">
                 <!-- Logo -->
-                <a href="#" class="flex items-center gap-2 text-2xl font-black tracking-wider uppercase">
+                <a href="{{ url('/') }}" class="flex items-center gap-2 text-2xl font-black tracking-wider uppercase">
                     <span class="neon-accent">FIT</span><span>CLUB</span>
                 </a>
 
@@ -81,6 +140,7 @@
                     <a href="#program" class="hover:text-[#ff5b00] transition duration-200">Program</a>
                     <a href="#choose" class="hover:text-[#ff5b00] transition duration-200">Why Us</a>
                     <a href="#plans" class="hover:text-[#ff5b00] transition duration-200">Plans</a>
+                    <a href="#schedules" class="hover:text-[#ff5b00] transition duration-200">Schedules</a>
                 </nav>
 
                 <!-- Auth Buttons -->
@@ -92,7 +152,7 @@
                             </a>
                             <form method="POST" action="{{ route('logout') }}" class="inline">
                                 @csrf
-                                <button type="submit" class="px-5 py-2 rounded-full bg-neon-gradient text-white hover:opacity-90 transition duration-300 text-sm font-bold bg-neon-glow cursor-pointer">
+                                <button type="submit" class="px-5 py-2 rounded-full bg-[#ff5b00] text-white hover:opacity-90 transition duration-300 text-sm font-bold bg-neon-glow cursor-pointer">
                                     Logout
                                 </button>
                             </form>
@@ -112,7 +172,7 @@
         </header>
 
         <!-- Main Landing Content -->
-        <main class="flex-grow pt-24">
+        <main class="flex-grow pt-24 relative z-10">
 
             <!-- Hero Section -->
             <section id="home" class="max-w-6xl mx-auto px-6 py-12 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
@@ -138,24 +198,31 @@
                     </div>
                 </div>
 
-                <!-- Right Image / Card -->
+                <!-- Right Interactive Hero Image Container -->
                 <div class="hero__img relative justify-self-center md:justify-self-end">
-                    <div class="relative w-[300px] md:w-[400px] h-[350px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl border border-[rgba(255,255,255,0.05)]">
-                        <img src="/images/gym_hero_athlete.jpg" alt="Gym Athlete" class="w-full h-full object-cover">
-                        <!-- Overlay Card -->
-                        <div class="absolute bottom-6 left-6 right-6 p-4 rounded-xl glass-card flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span class="p-2.5 rounded-full bg-neon-gradient text-white text-xl">
-                                    <i class="ri-heart-pulse-fill"></i>
-                                </span>
-                                <div>
-                                    <p class="text-xs text-gray-400 font-bold uppercase">Heart Rate</p>
-                                    <p class="text-lg font-black tracking-wide">105 BPM</p>
+                    <div class="relative group cursor-pointer">
+                        <!-- Interactive Glowing Background Aura -->
+                        <div class="absolute -inset-2 rounded-2xl bg-neon-gradient opacity-20 blur-2xl group-hover:opacity-75 group-hover:scale-105 transition duration-500 ease-out"></div>
+                        
+                        <!-- Image Container with Smooth Zoom -->
+                        <div class="relative w-[300px] md:w-[400px] h-[350px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl border border-[rgba(255,255,255,0.08)] group-hover:border-[#ff5b00]/50 transition duration-500">
+                            <img src="{{ asset('images/gym_hero_athlete.jpg') }}" alt="Gym Athlete" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700 ease-out">
+                            
+                            <!-- Overlay Card with Micro Animation -->
+                            <div class="absolute bottom-6 left-6 right-6 p-4 rounded-xl glass-card flex items-center justify-between group-hover:translate-y-1 transition duration-300">
+                                <div class="flex items-center gap-3">
+                                    <span class="p-2.5 rounded-full bg-neon-gradient text-white text-xl shadow-lg">
+                                        <i class="ri-heart-pulse-fill"></i>
+                                    </span>
+                                    <div>
+                                        <p class="text-xs text-gray-400 font-bold uppercase">Heart Rate</p>
+                                        <p class="text-lg font-black tracking-wide">105 BPM</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-gray-400 font-bold uppercase">Calories</p>
-                                <p class="text-lg font-black tracking-wide text-[#ff5b00]">220 kcal</p>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-400 font-bold uppercase">Calories</p>
+                                    <p class="text-lg font-black tracking-wide text-[#ff5b00]">220 kcal</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -227,10 +294,13 @@
 
             <!-- Why Choose Us Section -->
             <section id="choose" class="max-w-6xl mx-auto px-6 py-16 md:py-28 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <!-- Left image -->
+                <!-- Left Interactive Dedicated Trainer Image -->
                 <div class="choose__img justify-self-center md:justify-self-start">
-                    <div class="relative w-[300px] md:w-[400px] h-[350px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl border border-[rgba(255,255,255,0.05)]">
-                        <img src="/images/gym_hero_athlete.jpg" alt="Trainer" class="w-full h-full object-cover grayscale brightness-90">
+                    <div class="relative group cursor-pointer">
+                        <div class="absolute -inset-2 rounded-2xl bg-neon-gradient opacity-15 blur-2xl group-hover:opacity-60 transition duration-500"></div>
+                        <div class="relative w-[300px] md:w-[400px] h-[350px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl border border-[rgba(255,255,255,0.05)] group-hover:border-[#ff5b00]/40 transition duration-500">
+                            <img src="{{ asset('images/gym_trainer_coach.jpg') }}" alt="Dedicated Personal Trainer" class="w-full h-full object-cover grayscale brightness-90 transform group-hover:scale-110 group-hover:grayscale-0 transition duration-700 ease-out">
+                        </div>
                     </div>
                 </div>
 
@@ -283,68 +353,88 @@
                     <h3 class="text-3xl md:text-4xl font-black uppercase tracking-wide">Choose Your Subscriptions</h3>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Plan 1 -->
-                    <div class="pricing__card p-8 rounded-2xl glass-card flex flex-col justify-between space-y-6 transition duration-300">
-                        <div class="space-y-4">
-                            <h4 class="text-lg font-bold uppercase tracking-widest">Basic Plan</h4>
-                            <p class="text-4xl font-black text-[#ff5b00]">$20 <span class="text-xs text-gray-400 font-normal uppercase">/ Month</span></p>
-                            <hr class="border-gray-800">
-                            <ul class="space-y-3 text-sm text-gray-300">
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>2 Hours fitness training</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Access to gym room</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Basic lockers</span></li>
-                            </ul>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    @foreach($plans as $plan)
+                        <x-subscription-plan-card :plan="$plan" :showSubscribeForm="false" />
+                    @endforeach
+                </div>
+            </section>
+
+            <!-- Gym Schedules Section -->
+            <section id="schedules" class="max-w-6xl mx-auto px-6 py-16 space-y-8">
+                <div class="text-center space-y-2">
+                    <h2 class="text-xs font-black uppercase tracking-widest neon-accent">WORKING HOURS</h2>
+                    <h3 class="text-3xl md:text-4xl font-black uppercase tracking-wide">Gym Operating Schedules</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Men Schedules Card -->
+                    <div class="glass-card p-8 rounded-2xl border border-white/5 space-y-6">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                            <h3 class="text-xl font-black text-white uppercase flex items-center gap-2">
+                                <i class="ri-men-line text-blue-400 text-2xl"></i> Men's Operating Hours
+                            </h3>
+                            <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-wider">
+                                Men Shift Hours
+                            </span>
                         </div>
-                        <a href="{{ route('register') }}" class="block text-center py-2.5 rounded-full border border-white hover:bg-white hover:text-black transition duration-300 font-bold">
-                            Join Now
-                        </a>
+
+                        <ul class="space-y-4 text-xs">
+                            @forelse($menSchedules as $sch)
+                                <li class="p-4 rounded-xl bg-white/5 flex items-center justify-between hover:bg-white/10 transition">
+                                    <div>
+                                        <div class="font-bold text-white text-sm">{{ $sch->days_label }}</div>
+                                        <div class="text-gray-400 text-xs mt-0.5">{{ $sch->notes ?? 'Standard Men Shift' }}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-black text-[#ff5b00] text-sm block">{{ $sch->time_label }}</span>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="text-gray-400 text-xs italic">No schedule posted for Men.</li>
+                            @endforelse
+                        </ul>
                     </div>
 
-                    <!-- Plan 2 (Highlighted) -->
-                    <div class="pricing__card p-8 rounded-2xl glass-card flex flex-col justify-between space-y-6 transition duration-300 border-[rgba(255,91,0,0.5)] relative bg-neon-glow">
-                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-neon-gradient text-white text-xs font-black uppercase tracking-widest">
-                            BEST CHOICE
+                    <!-- Women Schedules Card -->
+                    <div class="glass-card p-8 rounded-2xl border border-white/5 space-y-6">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                            <h3 class="text-xl font-black text-[#ff5b00] uppercase flex items-center gap-2">
+                                <i class="ri-women-line text-pink-400 text-2xl"></i> Women's Operating Hours
+                            </h3>
+                            <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs font-black uppercase tracking-wider">
+                                Women Shift Hours
+                            </span>
                         </div>
-                        <div class="space-y-4">
-                            <h4 class="text-lg font-bold uppercase tracking-widest">Weekly Plan</h4>
-                            <p class="text-4xl font-black text-[#ff5b00]">$45 <span class="text-xs text-gray-400 font-normal uppercase">/ Week</span></p>
-                            <hr class="border-gray-800">
-                            <ul class="space-y-3 text-sm text-gray-300">
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>4 Hours fitness training</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Access to group classes</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Personal diet advisor</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Lockers and showers</span></li>
-                            </ul>
-                        </div>
-                        <a href="{{ route('register') }}" class="block text-center py-2.5 rounded-full bg-neon-gradient text-white hover:opacity-90 transition duration-300 font-bold bg-neon-glow">
-                            Join Now
-                        </a>
-                    </div>
 
-                    <!-- Plan 3 -->
-                    <div class="pricing__card p-8 rounded-2xl glass-card flex flex-col justify-between space-y-6 transition duration-300">
-                        <div class="space-y-4">
-                            <h4 class="text-lg font-bold uppercase tracking-widest">Monthly Plan</h4>
-                            <p class="text-4xl font-black text-[#ff5b00]">$80 <span class="text-xs text-gray-400 font-normal uppercase">/ Month</span></p>
-                            <hr class="border-gray-800">
-                            <ul class="space-y-3 text-sm text-gray-300">
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Unlimited fitness access</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>All special gym programs</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>1-on-1 Certified coach</span></li>
-                                <li class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-[#ff5b00]"></i> <span>Free gym towel & bottle</span></li>
-                            </ul>
-                        </div>
-                        <a href="{{ route('register') }}" class="block text-center py-2.5 rounded-full border border-white hover:bg-white hover:text-black transition duration-300 font-bold">
-                            Join Now
-                        </a>
+                        <ul class="space-y-4 text-xs">
+                            @forelse($womenSchedules as $sch)
+                                <li class="p-4 rounded-xl bg-white/5 flex items-center justify-between hover:bg-white/10 transition">
+                                    <div>
+                                        <div class="font-bold text-white text-sm">{{ $sch->days_label }}</div>
+                                        <div class="text-gray-400 text-xs mt-0.5">{{ $sch->notes ?? 'Standard Ladies Shift' }}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        @if($sch->is_off_day)
+                                            <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-black text-xs uppercase tracking-wider">
+                                                Ladies Day Off
+                                            </span>
+                                        @else
+                                            <span class="font-black text-[#ff5b00] text-sm block">{{ $sch->time_label }}</span>
+                                        @endif
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="text-gray-400 text-xs italic">No schedule posted for Ladies.</li>
+                            @endforelse
+                        </ul>
                     </div>
                 </div>
             </section>
         </main>
 
         <!-- Footer -->
-        <footer class="glass-card py-10 px-6 mt-12 border-t border-[rgba(255,255,255,0.05)]">
+        <footer class="glass-card py-10 px-6 mt-12 border-t border-[rgba(255,255,255,0.05)] relative z-10">
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                 <!-- Logo -->
                 <a href="#" class="text-xl font-black uppercase">
@@ -364,7 +454,6 @@
         <!-- ScrollReveal Animation Scripts -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                // التأكد من عمل المكتبة بشكل صحيح
                 if (typeof window.ScrollReveal !== 'undefined') {
                     const sr = window.ScrollReveal({
                         origin: 'top',
@@ -374,18 +463,11 @@
                         reset: false
                     });
 
-                    // 1. تحريكات البطل (Hero)
                     sr.reveal('.hero__data');
                     sr.reveal('.hero__img', { origin: 'bottom', delay: 500 });
-
-                    // 2. تحريكات البرامج (Programs)
                     sr.reveal('.program__card', { interval: 150 });
-
-                    // 3. تحريكات لماذا نحن (Why Us)
                     sr.reveal('.choose__img', { origin: 'left' });
                     sr.reveal('.choose__content', { origin: 'right', delay: 400 });
-
-                    // 4. تحريكات بطاقات الأسعار (Pricing)
                     sr.reveal('.pricing__card', { interval: 150 });
                 }
             });

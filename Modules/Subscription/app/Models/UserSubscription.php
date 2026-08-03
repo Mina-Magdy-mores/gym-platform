@@ -1,0 +1,61 @@
+<?php
+
+namespace Modules\Subscription\Models;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserSubscription extends Model
+{
+    /**
+     * The attributes that are mass assignable.
+     */
+    protected $fillable = [
+        'user_id',
+        'subscription_plan_id',
+        'starts_at',
+        'ends_at',
+        'status',
+        'price_paid',
+        'remaining_freeze_days',
+        'remaining_invitations',
+        'remaining_inbody_scans',
+        'remaining_pt_sessions',
+        'remaining_kickboxing_classes',
+        'remaining_nutrition_plans',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
+    ];
+
+    /**
+     * Scope a query to only include active subscriptions.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active')
+                     ->where('ends_at', '>=', now());
+    }
+
+    /**
+     * Relationship: The user who owns this subscription.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relationship: The subscription plan chosen.
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'subscription_plan_id');
+    }
+}
