@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Modules\User\Http\Controllers\UserController;
 use Modules\User\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -41,6 +42,8 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::delete('/profile/media/{mediaId}', [ProfileController::class, 'destroyMedia'])->name('profile.media.destroy');
+    
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

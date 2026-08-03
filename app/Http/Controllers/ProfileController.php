@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use Modules\User\Services\ProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,16 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    protected ProfileService $profileService;
+
+    /**
+     * Inject ProfileService dependency.
+     */
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     /**
      * Display the user's profile form.
      */
@@ -22,17 +33,18 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update the user's profile information and media attachments.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $this->profileService->updateProfile($user, $request->validated());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+            $user->save();
         }
-
-        $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -56,5 +68,18 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+    /**
+     * Delete a specific media item belonging to the user.
+     */
+    public function destroyMedia(Request $request, int $mediaId): RedirectResponse
+    {
+        $deleted = $this->profileService->deleteMedia($request->user(), $mediaId);
+
+        if (! $deleted) {
+            return Redirect::route('profile.edit')->with('error', 'Media file not found.');
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'media-deleted');
     }
 }
