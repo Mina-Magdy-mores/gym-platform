@@ -7,10 +7,11 @@
 
         <title>{{ config('app.name', 'FIT CLUB') }}</title>
 
-        <!-- Fonts -->
+        <!-- Fonts & Icons -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -42,9 +43,10 @@
                 filter: blur(90px);
                 z-index: 0;
             }
+            [x-cloak] { display: none !important; }
         </style>
     </head>
-    <body class="antialiased text-white min-h-screen bg-[#181a20] relative overflow-x-hidden">
+    <body x-data="{ showGymTerms: false }" class="antialiased text-white min-h-screen bg-[#181a20] relative overflow-x-hidden">
         <!-- Background Glow Orbs -->
         <div class="neon-blur-circle top-10 -left-20"></div>
         <div class="neon-blur-circle bottom-20 -right-20"></div>
@@ -71,5 +73,8 @@
                 &copy; {{ date('Y') }} FIT CLUB. All rights reserved.
             </footer>
         </div>
+
+        <!-- Global Gym Terms Consent Modal Component -->
+        <x-gym-terms-modal />
     </body>
 </html>

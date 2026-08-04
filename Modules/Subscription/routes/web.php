@@ -11,9 +11,11 @@ use Modules\Subscription\Http\Controllers\SubscriptionController;
 |--------------------------------------------------------------------------
 */
 
+// Public / Guest Subscription Plans & Checkout Route
+Route::get('plans', [SubscriptionController::class, 'plans'])->name('plans.index');
+Route::get('checkout/{plan}', [SubscriptionController::class, 'checkout'])->middleware(['auth'])->name('checkout.show');
+
 Route::middleware(['auth'])->group(function () {
-    // Member Subscription Plans & Schedules Page
-    Route::get('plans', [SubscriptionController::class, 'plans'])->name('plans.index');
     Route::post('subscriptions', [SubscriptionController::class, 'subscribe'])->name('subscriptions.store');
 
     // Private Trainer Bookings Page

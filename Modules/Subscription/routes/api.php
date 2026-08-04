@@ -14,13 +14,17 @@ use Modules\Subscription\Http\Controllers\Api\ApiSubscriptionController;
 
 Route::prefix('v1')->group(function () {
 
-    // Public Routes (Plans & Gym Operating Schedules)
+    // Public Routes (Plans, Gym Operating Schedules & Regulations)
     Route::get('plans', [ApiSubscriptionController::class, 'plans']);
     Route::get('schedules', [ApiSubscriptionController::class, 'schedules']);
+    Route::get('gym-rules', [ApiSubscriptionController::class, 'gymRules']);
 
     // Protected Routes (Requires Sanctum Token)
     Route::middleware(['auth:sanctum'])->group(function () {
         
+        // Member Dashboard Real-time Benefits & Usage API
+        Route::get('member/dashboard', [ApiSubscriptionController::class, 'memberDashboard']);
+
         // Subscription Management
         Route::post('subscriptions', [ApiSubscriptionController::class, 'subscribe']);
 

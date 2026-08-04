@@ -24,6 +24,19 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Display member dashboard cleanly inside Subscription Module with zero inline view logic.
+     */
+    public function dashboard(Request $request): View
+    {
+        $user = $request->user();
+        $activeSub = $user->activeSubscription;
+        $gymRules = $this->subscriptionService->getActiveGymRules();
+        $upcomingBookings = $this->bookingService->getUserBookings($user);
+
+        return view('dashboard', compact('user', 'activeSub', 'gymRules', 'upcomingBookings'));
+    }
+
+    /**
      * Display subscription plans and gym operating schedules.
      */
     public function plans(): View
@@ -36,6 +49,17 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Display plan checkout and terms review page via service layer.
+     */
+    public function checkout(int $planId): View
+    {
+        $plan = $this->subscriptionService->getPlanById($planId);
+        $gymRules = $this->subscriptionService->getActiveGymRules();
+
+        return view('checkout', compact('plan', 'gymRules'));
+    }
+
+    /**
      * Subscribe user to a plan via Web form.
      */
     public function subscribe(SubscribePlanRequest $request): RedirectResponse
@@ -45,7 +69,7 @@ class SubscriptionController extends Controller
             $request->validated('subscription_plan_id')
         );
 
-        return redirect()->route('plans.index')->with('status', 'subscribed');
+        return redirect()->route('dashboard')->with('status', 'subscribed');
     }
 
     /**

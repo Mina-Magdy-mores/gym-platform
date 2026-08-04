@@ -7,6 +7,7 @@ use App\Traits\CacheableServiceTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Modules\Subscription\Models\GymRule;
 use Modules\Subscription\Models\GymSchedule;
 use Modules\Subscription\Models\SubscriptionPlan;
 use Modules\Subscription\Models\UserSubscription;
@@ -28,6 +29,17 @@ class SubscriptionService
         return $this->rememberSafe(self::CACHE_ACTIVE_PLANS, 86400, function () {
             return SubscriptionPlan::active()->get();
         });
+    }
+
+    /**
+     * Get active gym rules for UI rendering.
+     */
+    public function getActiveGymRules(): Collection
+    {
+        return GymRule::where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('rule_number', 'asc')
+            ->get();
     }
 
     /**
@@ -210,6 +222,7 @@ class SubscriptionService
             'starts_at' => $startDate,
             'ends_at' => $endDate,
             'status' => 'active',
+            'price_paid' => $plan->price,
             'remaining_freeze_days' => $plan->freeze_days,
             'remaining_invitations' => $plan->invitations_count,
             'remaining_inbody_scans' => $plan->inbody_scans,
