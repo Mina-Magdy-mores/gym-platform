@@ -68,6 +68,16 @@ class PaymobAdapter implements PaymentGatewayInterface
 
         $orderId = $orderResponse->json('id');
 
+        $firstName = (string) ($metadata['first_name'] ?? 'Gym');
+        $lastName = (string) ($metadata['last_name'] ?? 'Member');
+
+        if (strlen($firstName) < 2) {
+            $firstName = $firstName . ' User';
+        }
+        if (strlen($lastName) < 2) {
+            $lastName = $lastName . ' Member';
+        }
+
         // 3. Step 3: Request Payment Key with Customer Billing Data
         $keyResponse = Http::post($this->baseUrl . '/acceptance/payment_keys', [
             'auth_token' => $authToken,
@@ -75,8 +85,8 @@ class PaymobAdapter implements PaymentGatewayInterface
             'expiration' => 3600,
             'order_id' => (string) $orderId,
             'billing_data' => [
-                'first_name' => $metadata['first_name'] ?? 'Gym',
-                'last_name' => $metadata['last_name'] ?? 'Member',
+                'first_name' => $firstName,
+                'last_name' => $lastName,
                 'email' => $metadata['email'] ?? 'user@example.com',
                 'phone_number' => $metadata['phone_number'] ?? '+201000000000',
                 'floor' => 'NA',

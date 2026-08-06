@@ -48,6 +48,12 @@ class SubscriptionController extends Controller
     {
         if ($request->query('success') === 'true' && ! session()->has('status')) {
             session()->flash('status', 'subscribed');
+        } elseif ($request->query('success') === 'false' && ! session()->has('error')) {
+            $paymobMessage = $request->query('data_message') 
+                ?? $request->query('txn_response_code') 
+                ?? 'Payment transaction was declined or cancelled. Please try again.';
+
+            session()->flash('error', 'Paymob Gateway Notice: ' . $paymobMessage);
         }
 
         $plans = $this->subscriptionService->getActivePlans();
