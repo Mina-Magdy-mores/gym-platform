@@ -5,6 +5,7 @@ namespace Modules\Subscription\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends Model
 {
@@ -44,5 +45,13 @@ class Booking extends Model
     public function trainer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'trainer_id');
+    }
+
+    /**
+     * Relationship: The financial ledger transaction for this trainer session booking.
+     */
+    public function walletTransaction(): HasOne
+    {
+        return $this->hasOne(\Modules\Wallet\Models\WalletTransaction::class);
     }
 }

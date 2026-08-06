@@ -63,6 +63,11 @@
                 filter: blur(100px);
                 z-index: -1;
             }
+
+            /* Smooth Scroll Offset */
+            html {
+                scroll-padding-top: 100px;
+            }
         </style>
     </head>
     <body class="antialiased min-h-screen flex flex-col justify-between bg-[#181a20] relative">
@@ -71,7 +76,7 @@
         <div class="neon-blur-circle top-10 -left-20"></div>
         <div class="neon-blur-circle bottom-40 -right-20"></div>
 
-        <!-- Reverted Uniform Linear Speed SVG Mask Overlay -->
+        <!-- Reverted Uniform Linear Speed SVG Mask Overlay (Master Heartbeat Beam Animation) -->
         <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-85 w-full h-full">
             <svg class="w-full h-full" viewBox="0 0 1400 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
 
@@ -172,7 +177,7 @@
         </header>
 
         <!-- Main Landing Content -->
-        <main class="flex-grow pt-24 relative z-10">
+        <main class="flex-grow pt-28 relative z-10">
 
             <!-- Hero Section -->
             <section id="home" class="max-w-6xl mx-auto px-6 py-12 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
@@ -198,94 +203,77 @@
                     </div>
                 </div>
 
-                <!-- Right Interactive Hero Image Container -->
-                <div class="hero__img relative justify-self-center md:justify-self-end">
+                <!-- Right Hero Image with Neon Glow Overlay -->
+                <div class="hero__img justify-self-center md:justify-self-end">
                     <div class="relative group cursor-pointer">
-                        <!-- Interactive Glowing Background Aura -->
-                        <div class="absolute -inset-2 rounded-2xl bg-neon-gradient opacity-20 blur-2xl group-hover:opacity-75 group-hover:scale-105 transition duration-500 ease-out"></div>
-                        
-                        <!-- Image Container with Smooth Zoom -->
-                        <div class="relative w-[300px] md:w-[400px] h-[350px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl border border-[rgba(255,255,255,0.08)] group-hover:border-[#ff5b00]/50 transition duration-500">
-                            <img src="{{ asset('images/gym_hero_athlete.jpg') }}" alt="Gym Athlete" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700 ease-out">
-                            
-                            <!-- Overlay Card with Micro Animation -->
-                            <div class="absolute bottom-6 left-6 right-6 p-4 rounded-xl glass-card flex items-center justify-between group-hover:translate-y-1 transition duration-300">
-                                <div class="flex items-center gap-3">
-                                    <span class="p-2.5 rounded-full bg-neon-gradient text-white text-xl shadow-lg">
-                                        <i class="ri-heart-pulse-fill"></i>
-                                    </span>
-                                    <div>
-                                        <p class="text-xs text-gray-400 font-bold uppercase">Heart Rate</p>
-                                        <p class="text-lg font-black tracking-wide">105 BPM</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-400 font-bold uppercase">Calories</p>
-                                    <p class="text-lg font-black tracking-wide text-[#ff5b00]">220 kcal</p>
-                                </div>
-                            </div>
+                        <div class="absolute -inset-1 rounded-2xl bg-neon-gradient opacity-30 blur-xl group-hover:opacity-75 transition duration-500"></div>
+                        <div class="relative w-[280px] md:w-[360px] h-[380px] md:h-[480px] rounded-2xl overflow-hidden shadow-2xl border border-[rgba(255,255,255,0.1)]">
+                            <img src="{{ asset('images/gym_hero_athlete.jpg') }}" alt="Fit Club Athlete" class="w-full h-full object-cover grayscale brightness-90 transform group-hover:scale-105 group-hover:grayscale-0 transition duration-500">
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Programs Section -->
-            <section id="program" class="max-w-6xl mx-auto px-6 py-16 md:py-28 space-y-12">
-                <div class="text-center md:text-left space-y-2">
-                    <h2 class="text-xs font-black uppercase tracking-widest neon-accent">EXPLORE OUR PROGRAM</h2>
-                    <h3 class="text-3xl md:text-4xl font-black uppercase tracking-wide">To Shape Your Body</h3>
+            <section id="program" class="max-w-6xl mx-auto px-6 py-16 md:py-24 space-y-12">
+                <div class="text-center space-y-2">
+                    <h2 class="text-xs font-black uppercase tracking-widest neon-accent">OUR PROGRAM</h2>
+                    <h3 class="text-3xl md:text-4xl font-black uppercase tracking-wide">BUILD YOUR BEST SHAPE</h3>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Card 1 -->
-                    <div class="program__card p-6 rounded-xl glass-card space-y-4 transition duration-300">
-                        <span class="inline-block p-3 rounded-lg bg-[rgba(255,91,0,0.1)] text-[#ff5b00] text-3xl">
+                    <!-- Program 1 -->
+                    <div class="program__card glass-card p-6 rounded-2xl space-y-4 hover:border-[#ff5b00] transition duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl text-[#ff5b00] group-hover:bg-neon-gradient group-hover:text-white transition duration-300">
+                            <i class="ri-heart-pulse-fill"></i>
+                        </div>
+                        <h4 class="text-xl font-bold uppercase">Flex Muscle</h4>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            For those who want to shape their body through high resistance workouts and muscle building.
+                        </p>
+                        <a href="#plans" class="inline-flex items-center gap-2 text-xs font-bold text-[#ff5b00] group-hover:translate-x-1 transition duration-200">
+                            <span>Join Now</span> <i class="ri-arrow-right-line"></i>
+                        </a>
+                    </div>
+
+                    <!-- Program 2 -->
+                    <div class="program__card glass-card p-6 rounded-2xl space-y-4 hover:border-[#ff5b00] transition duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl text-[#ff5b00] group-hover:bg-neon-gradient group-hover:text-white transition duration-300">
                             <i class="ri-fire-fill"></i>
-                        </span>
-                        <h4 class="text-xl font-bold tracking-wide">Strength Training</h4>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            In this program, you are trained to improve your strength through many exercises.
+                        </div>
+                        <h4 class="text-xl font-bold uppercase">Cardio Exercise</h4>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Designed for fat loss, stamina endurance, and improving overall cardiovascular health.
                         </p>
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 text-sm font-bold neon-accent hover:underline">
+                        <a href="#plans" class="inline-flex items-center gap-2 text-xs font-bold text-[#ff5b00] group-hover:translate-x-1 transition duration-200">
                             <span>Join Now</span> <i class="ri-arrow-right-line"></i>
                         </a>
                     </div>
-                    <!-- Card 2 -->
-                    <div class="program__card p-6 rounded-xl glass-card space-y-4 transition duration-300">
-                        <span class="inline-block p-3 rounded-lg bg-[rgba(255,91,0,0.1)] text-[#ff5b00] text-3xl">
-                            <i class="ri-heart-line"></i>
-                        </span>
-                        <h4 class="text-xl font-bold tracking-wide">Physical Fitness</h4>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            Focusing on cardiorespiratory training to build high endurance and fat burning.
+
+                    <!-- Program 3 -->
+                    <div class="program__card glass-card p-6 rounded-2xl space-y-4 hover:border-[#ff5b00] transition duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl text-[#ff5b00] group-hover:bg-neon-gradient group-hover:text-white transition duration-300">
+                            <i class="ri-body-scan-fill"></i>
+                        </div>
+                        <h4 class="text-xl font-bold uppercase">Basic Yoga</h4>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Focus on posture alignment, mobility, breathing technique, and active joint recovery.
                         </p>
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 text-sm font-bold neon-accent hover:underline">
+                        <a href="#plans" class="inline-flex items-center gap-2 text-xs font-bold text-[#ff5b00] group-hover:translate-x-1 transition duration-200">
                             <span>Join Now</span> <i class="ri-arrow-right-line"></i>
                         </a>
                     </div>
-                    <!-- Card 3 -->
-                    <div class="program__card p-6 rounded-xl glass-card space-y-4 transition duration-300">
-                        <span class="inline-block p-3 rounded-lg bg-[rgba(255,91,0,0.1)] text-[#ff5b00] text-3xl">
-                            <i class="ri-run-line"></i>
-                        </span>
-                        <h4 class="text-xl font-bold tracking-wide">Fat Lose</h4>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            Best routines for weight loss, high-intensity intervals, and functional health.
+
+                    <!-- Program 4 -->
+                    <div class="program__card glass-card p-6 rounded-2xl space-y-4 hover:border-[#ff5b00] transition duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl text-[#ff5b00] group-hover:bg-neon-gradient group-hover:text-white transition duration-300">
+                            <i class="ri-shield-flash-fill"></i>
+                        </div>
+                        <h4 class="text-xl font-bold uppercase">Weight Lifting</h4>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Heavy compound powerlifting and athletic strength conditioning guided by certified trainers.
                         </p>
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 text-sm font-bold neon-accent hover:underline">
-                            <span>Join Now</span> <i class="ri-arrow-right-line"></i>
-                        </a>
-                    </div>
-                    <!-- Card 4 -->
-                    <div class="program__card p-6 rounded-xl glass-card space-y-4 transition duration-300">
-                        <span class="inline-block p-3 rounded-lg bg-[rgba(255,91,0,0.1)] text-[#ff5b00] text-3xl">
-                            <i class="ri-capsule-line"></i>
-                        </span>
-                        <h4 class="text-xl font-bold tracking-wide">Weight Gain</h4>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            For those who want to bulk up properly with muscle mass and structured nutrition.
-                        </p>
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 text-sm font-bold neon-accent hover:underline">
+                        <a href="#plans" class="inline-flex items-center gap-2 text-xs font-bold text-[#ff5b00] group-hover:translate-x-1 transition duration-200">
                             <span>Join Now</span> <i class="ri-arrow-right-line"></i>
                         </a>
                     </div>
@@ -352,6 +340,13 @@
                     <h2 class="text-xs font-black uppercase tracking-widest neon-accent">OUR PRICING PLAN</h2>
                     <h3 class="text-3xl md:text-4xl font-black uppercase tracking-wide">Choose Your Subscriptions</h3>
                 </div>
+
+                @if(session('error'))
+                    <div class="p-4 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-xs flex items-center justify-center gap-2 max-w-2xl mx-auto">
+                        <i class="ri-error-warning-fill text-lg"></i>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     @foreach($plans as $plan)

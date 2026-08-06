@@ -5,6 +5,7 @@ namespace Modules\Subscription\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Payment\Services\PaymentService;
 use Modules\Subscription\Http\Requests\SubscribePlanRequest;
 use Modules\Subscription\Services\BookingService;
 use Modules\Subscription\Services\SubscriptionService;
@@ -12,7 +13,6 @@ use Modules\Subscription\Transformers\GymRuleResource;
 use Modules\Subscription\Transformers\GymScheduleResource;
 use Modules\Subscription\Transformers\MemberDashboardResource;
 use Modules\Subscription\Transformers\SubscriptionPlanResource;
-use Modules\Subscription\Transformers\UserSubscriptionResource;
 use Modules\User\Traits\ApiResponseTrait;
 
 class ApiSubscriptionController extends Controller
@@ -21,11 +21,16 @@ class ApiSubscriptionController extends Controller
 
     protected SubscriptionService $subscriptionService;
     protected BookingService $bookingService;
+    protected PaymentService $paymentService;
 
-    public function __construct(SubscriptionService $subscriptionService, BookingService $bookingService)
-    {
+    public function __construct(
+        SubscriptionService $subscriptionService,
+        BookingService $bookingService,
+        PaymentService $paymentService
+    ) {
         $this->subscriptionService = $subscriptionService;
         $this->bookingService = $bookingService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -96,21 +101,32 @@ class ApiSubscriptionController extends Controller
     }
 
     /**
-     * Subscribe current user to a plan.
+     * Subscribe current user to a plan via payment checkout process API.
      */
     public function subscribe(SubscribePlanRequest $request): JsonResponse
     {
-        $subscription = $this->subscriptionService->subscribeUser(
-            $request->user(),
+        $plan = $this->subscriptionService->getPlanById(
             $request->validated('subscription_plan_id')
         );
 
-        $subscription->load('plan');
+        $paymentResponse = $this->paymentService->processSubscriptionPayment(
+            $request->user(),
+            $plan
+        );
 
         $data = [
-            'subscription' => new UserSubscriptionResource($subscription),
+            'is_successful' => $paymentResponse->isSuccessful,
+            'transaction_id' => $paymentResponse->transactionId,
+            'redirect_url' => $paymentResponse->redirectUrl,
+            'message' => $paymentResponse->message,
+            'plan' => [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'price' => (float) $plan->price,
+                'currency' => $plan->currency ?? 'EGP',
+            ],
         ];
 
-        return $this->successResponse($data, 'Subscribed to plan successfully.', 201);
+        return $this->successResponse($data, 'Payment checkout session initiated successfully.', 201);
     }
 }

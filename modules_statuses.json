@@ -1,4 +1,6 @@
 {
     "User": true,
-    "Subscription": true
+    "Subscription": true,
+    "Payment": true,
+    "Wallet": true
 }

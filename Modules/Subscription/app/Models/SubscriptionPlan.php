@@ -5,6 +5,8 @@ namespace Modules\Subscription\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Payment\Models\Payment;
 
 class SubscriptionPlan extends Model
 {
@@ -50,5 +52,9 @@ class SubscriptionPlan extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 }

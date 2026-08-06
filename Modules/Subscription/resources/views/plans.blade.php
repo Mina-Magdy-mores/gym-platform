@@ -13,11 +13,18 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-12">
 
-            <!-- Success Alert -->
+            <!-- Flash Status & Error Alerts -->
             @if(session('status') === 'subscribed')
                 <div class="p-4 rounded-xl glass-card border border-green-500/30 text-green-400 font-bold text-sm flex items-center gap-2">
                     <i class="ri-checkbox-circle-fill text-xl"></i>
                     <span>Congratulations! You have successfully subscribed to the gym plan.</span>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="p-4 rounded-xl glass-card border border-red-500/30 text-red-400 font-bold text-sm flex items-center gap-2">
+                    <i class="ri-error-warning-fill text-xl"></i>
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 

@@ -231,4 +231,92 @@ class SubscriptionService
             'remaining_nutrition_plans' => $plan->nutrition_plans,
         ]);
     }
+
+    /**
+     * Determine payment amount and subscription action type (New, Upgrade, or Queued).
+     */
+    public function prepareSubscriptionAction(User $user, SubscriptionPlan $newPlan): array
+    {
+        $activeSub = $user->activeSubscription;
+
+        // 1. No active subscription -> Normal immediate purchase
+        if (! $activeSub) {
+            return [
+                'action' => 'new',
+                'amount_to_pay' => (float) $newPlan->price,
+                'message' => 'New membership subscription',
+            ];
+        }
+
+        $isWithinSevenDays = $activeSub->starts_at->gte(now()->subDays(7));
+
+        // 2. Within 7-day window -> Upgrade Rule (Rule 16)
+        if ($isWithinSevenDays) {
+            // Enforce Higher Tier Upgrade Only!
+            if ($newPlan->price <= $activeSub->price_paid) {
+                throw new \Exception('During the first 7 days, you can only upgrade to a higher tier membership plan.');
+            }
+
+            $priceDifference = max(0, (float) $newPlan->price - (float) $activeSub->price_paid);
+
+            return [
+                'action' => 'upgrade',
+                'amount_to_pay' => $priceDifference,
+                'message' => '7-Day Plan Upgrade (Paying Price Difference)',
+            ];
+        }
+
+        // 3. After 7 days -> Any plan can be queued for future activation
+        return [
+            'action' => 'queued',
+            'amount_to_pay' => (float) $newPlan->price,
+            'message' => 'Queued future membership (Starts after current plan ends)',
+        ];
+    }
+    /**
+ * Execute validated subscription action (New, Upgrade, or Queued).
+ */
+public function executeSubscriptionAction(User $user, SubscriptionPlan $newPlan, string $actionType): UserSubscription
+{
+    $activeSub = $user->activeSubscription;
+
+    if ($actionType === 'upgrade' && $activeSub) {
+        $activeSub->update([
+            'subscription_plan_id' => $newPlan->id,
+            'ends_at' => $activeSub->starts_at->copy()->addMonths($newPlan->duration_months ?? 1),
+            'price_paid' => $newPlan->price,
+            'remaining_freeze_days' => $newPlan->freeze_days,
+            'remaining_invitations' => $newPlan->invitations_count,
+            'remaining_inbody_scans' => $newPlan->inbody_scans,
+            'remaining_pt_sessions' => $newPlan->pt_sessions,
+            'remaining_kickboxing_classes' => $newPlan->kickboxing_classes,
+            'remaining_nutrition_plans' => $newPlan->nutrition_plans,
+        ]);
+
+        return $activeSub;
+    }
+
+    if ($actionType === 'queued' && $activeSub) {
+        $startsAt = $activeSub->ends_at->copy();
+        $endsAt = $startsAt->copy()->addMonths($newPlan->duration_months ?? 1);
+
+        return UserSubscription::create([
+            'user_id' => $user->id,
+            'subscription_plan_id' => $newPlan->id,
+            'starts_at' => $startsAt,
+            'ends_at' => $endsAt,
+            'status' => 'queued',
+            'price_paid' => $newPlan->price,
+            'remaining_freeze_days' => $newPlan->freeze_days,
+            'remaining_invitations' => $newPlan->invitations_count,
+            'remaining_inbody_scans' => $newPlan->inbody_scans,
+            'remaining_pt_sessions' => $newPlan->pt_sessions,
+            'remaining_kickboxing_classes' => $newPlan->kickboxing_classes,
+            'remaining_nutrition_plans' => $newPlan->nutrition_plans,
+        ]);
+    }
+
+    // Default: New Subscription
+    return $this->subscribeUser($user, $newPlan->id);
+}
 }
