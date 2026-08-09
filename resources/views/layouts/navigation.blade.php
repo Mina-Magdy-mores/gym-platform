@@ -22,12 +22,24 @@
                         Trainer Bookings
                     </x-nav-link>
 
+                    @hasanyrole('trainer|admin')
+                        <x-nav-link :href="route('wallet.index')" :active="request()->routeIs('wallet.*')" class="text-white hover:text-[#ff5b00]">
+                            Earnings Wallet
+                        </x-nav-link>
+                    @endhasanyrole
+
                     @role('admin')
                         <a href="{{ route('admin.plans.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.plans.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
                             <i class="ri-shield-star-line text-sm"></i> Admin Plans
                         </a>
                         <a href="{{ route('admin.schedules.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.schedules.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
                             <i class="ri-time-line text-sm"></i> Admin Schedules
+                        </a>
+                        <a href="{{ route('admin.payments.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.payments.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-money-dollar-circle-line text-sm"></i> Master Ledger
+                        </a>
+                        <a href="{{ route('admin.payouts.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.payouts.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-bank-card-line text-sm"></i> Admin Payouts
                         </a>
                     @endrole
                 </div>
@@ -57,12 +69,21 @@
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
+                        @hasanyrole('trainer|admin')
+                            <x-dropdown-link :href="route('wallet.index')">
+                                Earnings Wallet
+                            </x-dropdown-link>
+                        @endhasanyrole
+
                         @role('admin')
                             <x-dropdown-link :href="route('admin.plans.index')">
                                 Manage Subscription Plans
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('admin.schedules.index')">
                                 Manage Gym Schedules
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('admin.payouts.index')">
+                                Manage Trainer Payouts
                             </x-dropdown-link>
                         @endrole
 

@@ -7,7 +7,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Payment\Services\PaymentService;
-use Modules\Subscription\Http\Requests\BookSessionRequest;
 use Modules\Subscription\Http\Requests\SubscribePlanRequest;
 use Modules\Subscription\Services\BookingService;
 use Modules\Subscription\Services\SubscriptionService;
@@ -35,10 +34,14 @@ class SubscriptionController extends Controller
     {
         $user = $request->user();
         $activeSub = $user->activeSubscription;
+        if ($activeSub) {
+            $activeSub->load(['plan', 'payment']);
+        }
         $gymRules = $this->subscriptionService->getActiveGymRules();
         $upcomingBookings = $this->bookingService->getUserBookings($user);
+        $memberPayments = $user->payments()->with(['plan', 'booking.trainer'])->latest()->paginate(10);
 
-        return view('dashboard', compact('user', 'activeSub', 'gymRules', 'upcomingBookings'));
+        return view('dashboard', compact('user', 'activeSub', 'gymRules', 'upcomingBookings', 'memberPayments'));
     }
 
     /**
@@ -66,7 +69,7 @@ class SubscriptionController extends Controller
     /**
      * Display plan checkout, action preview (Upgrade / Queued), and terms review page cleanly with exception handling.
      */
-    public function checkout(Request $request, int $planId)
+    public function checkout(Request $request, int $planId): View|RedirectResponse
     {
         try {
             $plan = $this->subscriptionService->getPlanById($planId);
@@ -101,34 +104,6 @@ class SubscriptionController extends Controller
             return redirect()->route('dashboard')->with('status', 'subscribed');
         } catch (\Exception $e) {
             return redirect()->route('plans.index')->with('error', $e->getMessage());
-        }
-    }
-
-    /**
-     * Display trainer bookings page via service layer.
-     */
-    public function bookings(Request $request): View
-    {
-        $trainers = $this->bookingService->getAllTrainers();
-        $bookings = $this->bookingService->getUserBookings($request->user());
-
-        return view('subscription::bookings', compact('trainers', 'bookings'));
-    }
-
-    /**
-     * Book a private trainer session via Web form.
-     */
-    public function bookSession(BookSessionRequest $request): RedirectResponse
-    {
-        try {
-            $this->bookingService->bookTrainerSession(
-                $request->user(),
-                $request->validated()
-            );
-
-            return redirect()->route('bookings.index')->with('status', 'booked');
-        } catch (\Exception $e) {
-            return redirect()->route('bookings.index')->with('error', $e->getMessage());
         }
     }
 }

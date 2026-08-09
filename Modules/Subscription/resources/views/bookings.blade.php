@@ -102,7 +102,7 @@
                                         </div>
                                         <div>
                                             <div class="font-bold text-white text-sm">
-                                                Captain {{ $bk->trainer?->name ?? 'Trainer' }}
+                                                {{ str_starts_with($bk->trainer?->name ?? '', 'Captain') ? $bk->trainer->name : 'Captain ' . ($bk->trainer?->name ?? 'Trainer') }}
                                             </div>
                                             <div class="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
                                                 <span><i class="ri-calendar-line"></i> {{ $bk->booking_date }}</span>
@@ -111,7 +111,19 @@
                                         </div>
                                     </div>
 
-                                    <div class="text-right">
+                                    <div class="text-right flex items-center gap-2">
+                                        @if($bk->payment)
+                                            <a href="{{ route('invoices.show', $bk->payment->id) }}" target="_blank" class="px-2 py-1 rounded-lg bg-white/10 text-white hover:bg-white/20 transition text-[10px] font-bold inline-flex items-center gap-1">
+                                                <i class="ri-eye-line"></i> View
+                                            </a>
+                                            <a href="{{ route('invoices.download', $bk->payment->id) }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition text-[10px] font-bold inline-flex items-center gap-1">
+                                                <i class="ri-download-2-line"></i> PDF
+                                            </a>
+                                        @else
+                                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-bold inline-flex items-center gap-1">
+                                                <i class="ri-vip-crown-2-line"></i> Covered by Plan
+                                            </span>
+                                        @endif
                                         <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold uppercase tracking-wider">
                                             {{ $bk->status }}
                                         </span>

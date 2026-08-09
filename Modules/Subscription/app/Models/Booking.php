@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Payment\Models\Payment;
+use Modules\Wallet\Models\WalletTransaction;
 
 class Booking extends Model
 {
@@ -52,6 +54,14 @@ class Booking extends Model
      */
     public function walletTransaction(): HasOne
     {
-        return $this->hasOne(\Modules\Wallet\Models\WalletTransaction::class);
+        return $this->hasOne(WalletTransaction::class);
+    }
+
+    /**
+     * Relationship: The payment gateway receipt for this booking session.
+     */
+    public function payment(): HasOne
+    {
+        return $this->hasOne(Payment::class);
     }
 }

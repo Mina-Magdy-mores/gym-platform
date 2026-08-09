@@ -66,6 +66,11 @@
 
                     @if($activeSub)
                         <div class="flex items-center gap-3">
+                            @if(isset($activeSub->payment) && $activeSub->payment)
+                                <a href="{{ route('invoices.show', $activeSub->payment->id) }}" target="_blank" class="px-4 py-1.5 rounded-full bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white transition text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="ri-file-pdf-line"></i> Tax Receipt
+                                </a>
+                            @endif
                             <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-black uppercase tracking-wider">
                                 Active Until {{ $activeSub->ends_at->format('Y-m-d') }}
                             </span>
@@ -298,7 +303,19 @@
                                     <td class="py-4 px-4 font-black text-white">
                                         {{ number_format($booking->price, 2) }} EGP
                                     </td>
-                                    <td class="py-4 px-4 text-right">
+                                    <td class="py-4 px-4 text-right flex items-center justify-end gap-2">
+                                        @if($booking->payment)
+                                            <a href="{{ route('invoices.show', $booking->payment->id) }}" target="_blank" class="px-2 py-1 rounded-lg bg-white/10 text-white hover:bg-white/20 transition text-[10px] font-bold inline-flex items-center gap-1">
+                                                <i class="ri-eye-line"></i> View
+                                            </a>
+                                            <a href="{{ route('invoices.download', $booking->payment->id) }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition text-[10px] font-bold inline-flex items-center gap-1">
+                                                <i class="ri-download-2-line"></i> PDF
+                                            </a>
+                                        @else
+                                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-bold inline-flex items-center gap-1">
+                                                <i class="ri-vip-crown-2-line"></i> Covered by Plan
+                                            </span>
+                                        @endif
                                         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider 
                                             {{ $booking->status === 'confirmed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30' }}">
                                             {{ $booking->status }}
@@ -315,6 +332,87 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Member Payments & Official Tax Invoices Ledger Section -->
+            <div class="glass-card p-8 rounded-2xl border border-white/5 space-y-6">
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div>
+                        <h3 class="text-xl font-black text-white uppercase tracking-wide flex items-center gap-2">
+                            <i class="ri-money-dollar-circle-line neon-accent"></i> My Payment History & Tax Invoices
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Official receipts, subscription payments, and PT session invoices</p>
+                    </div>
+                    <span class="text-xs font-bold text-gray-400">Total Transactions: {{ $memberPayments->total() }}</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-white/10 text-gray-400 uppercase font-black tracking-wider">
+                                <th class="py-3 px-4">Txn Ref</th>
+                                <th class="py-3 px-4">Item Description</th>
+                                <th class="py-3 px-4">Gateway</th>
+                                <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5 font-semibold text-gray-300">
+                            @forelse($memberPayments as $mp)
+                                <tr class="hover:bg-white/5 transition">
+                                    <td class="py-4 px-4 font-mono font-bold text-white">#{{ $mp->transaction_id }}</td>
+                                    <td class="py-4 px-4 font-bold text-white">
+                                        @if($mp->booking_id)
+                                            <span class="text-purple-400"><i class="ri-user-star-line"></i> PT Session - Coach {{ $mp->booking->trainer->name ?? '' }}</span>
+                                        @elseif($mp->subscription_plan_id)
+                                            <span class="text-blue-400"><i class="ri-vip-crown-line"></i> Gym Plan - {{ $mp->plan->name ?? '' }}</span>
+                                        @else
+                                            <span>FitClub Services</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-4 px-4 uppercase font-bold text-neon-accent">{{ $mp->gateway }}</td>
+                                    <td class="py-4 px-4 font-black text-white text-sm">{{ number_format($mp->amount, 2) }} {{ $mp->currency }}</td>
+                                    <td class="py-4 px-4">
+                                        @if($mp->status === 'completed')
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-green-500/20 text-green-400 border border-green-500/30">Completed</span>
+                                        @else
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30">{{ $mp->status }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-4 px-4 text-gray-400">{{ $mp->created_at?->format('Y-m-d H:i') }}</td>
+                                    <td class="py-4 px-4 text-right flex items-center justify-end gap-2">
+                                        @if($mp->status === 'completed')
+                                            <a href="{{ route('invoices.show', $mp->id) }}" target="_blank"
+                                                class="px-2.5 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition text-xs font-bold inline-flex items-center gap-1">
+                                                <i class="ri-eye-line"></i> View
+                                            </a>
+                                            <a href="{{ route('invoices.download', $mp->id) }}" target="_blank"
+                                                class="px-3 py-1.5 rounded-lg bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition text-xs font-bold inline-flex items-center gap-1">
+                                                <i class="ri-download-2-line"></i> Download PDF
+                                            </a>
+                                        @else
+                                            <span class="text-gray-500 text-xs italic">N/A</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-gray-400 italic">
+                                        No payment history or tax receipts recorded yet.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($memberPayments->hasPages())
+                    <div class="mt-4">
+                        {{ $memberPayments->links() }}
+                    </div>
+                @endif
             </div>
 
             <!-- Agreed Membership Contract & Gym Regulations Table Section -->

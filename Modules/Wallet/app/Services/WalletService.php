@@ -2,8 +2,11 @@
 
 namespace Modules\Wallet\Services;
 
+use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Modules\Subscription\Models\Booking;
+use Modules\Wallet\Models\PayoutRequest;
 use Modules\Wallet\Models\TrainerWallet;
 use Modules\Wallet\Models\WalletTransaction;
 
@@ -27,7 +30,7 @@ class WalletService
             // 1. Find or Create Trainer Wallet
             $wallet = TrainerWallet::firstOrCreate(
                 ['user_id' => $booking->trainer_id],
-                ['balance' => 0.00, 'total_earned' => 0.00]
+                ['balance' => 0.00, 'total_earned' => 0.00, 'pending_payout' => 0.00]
             );
 
             // 2. Increment Wallet Balance & Total Earned
@@ -57,12 +60,115 @@ class WalletService
             $query->latest()->take(20);
         }])->firstOrCreate(
             ['user_id' => $trainerUserId],
-            ['balance' => 0.00, 'total_earned' => 0.00]
+            ['balance' => 0.00, 'total_earned' => 0.00, 'pending_payout' => 0.00]
         );
+
+        $payoutRequests = PayoutRequest::where('user_id', $trainerUserId)->latest()->get();
 
         return [
             'wallet' => $wallet,
             'transactions' => $wallet->transactions,
+            'payout_requests' => $payoutRequests,
         ];
+    }
+
+    /**
+     * Submit trainer payout request & freeze requested balance into pending_payout.
+     */
+    public function requestTrainerPayout(User $trainer, float $amount, string $paymentMethod, string $accountDetails): PayoutRequest
+    {
+        if ($amount <= 0) {
+            throw new \Exception('Payout amount must be greater than zero.');
+        }
+
+        $wallet = TrainerWallet::firstOrCreate(
+            ['user_id' => $trainer->id],
+            ['balance' => 0.00, 'total_earned' => 0.00, 'pending_payout' => 0.00]
+        );
+
+        if ((float) $wallet->balance < $amount) {
+            throw new \Exception('Insufficient wallet balance to request this payout.');
+        }
+
+        return DB::transaction(function () use ($trainer, $wallet, $amount, $paymentMethod, $accountDetails) {
+            // Freeze requested balance from available balance to pending_payout
+            $wallet->decrement('balance', $amount);
+            $wallet->increment('pending_payout', $amount);
+
+            return PayoutRequest::create([
+                'user_id' => $trainer->id,
+                'amount' => $amount,
+                'payment_method' => $paymentMethod,
+                'account_details' => $accountDetails,
+                'status' => 'pending',
+                'notes' => 'Payout requested via ' . strtoupper($paymentMethod),
+            ]);
+        });
+    }
+
+    /**
+     * Admin Approve Payout Request: Settle pending_payout balance & record ledger payout transaction.
+     */
+    public function approvePayoutRequest(PayoutRequest $payoutRequest): PayoutRequest
+    {
+        if ($payoutRequest->status !== 'pending') {
+            throw new \Exception('This payout request is already processed.');
+        }
+
+        $wallet = TrainerWallet::where('user_id', $payoutRequest->user_id)->firstOrFail();
+
+        return DB::transaction(function () use ($payoutRequest, $wallet) {
+            // Settle frozen pending payout
+            $wallet->decrement('pending_payout', $payoutRequest->amount);
+
+            // Record Payout Ledger Transaction
+            WalletTransaction::create([
+                'trainer_wallet_id' => $wallet->id,
+                'booking_id' => null,
+                'amount' => $payoutRequest->amount,
+                'commission_amount' => 0.00,
+                'net_amount' => $payoutRequest->amount,
+                'type' => 'payout',
+                'status' => 'completed',
+                'notes' => 'Payout approved and transferred via ' . strtoupper($payoutRequest->payment_method) . ' (' . $payoutRequest->account_details . ')',
+            ]);
+
+            $payoutRequest->update(['status' => 'approved']);
+
+            return $payoutRequest;
+        });
+    }
+
+    /**
+     * Admin Reject Payout Request: Unfreeze pending_payout & restore balance back to trainer wallet.
+     */
+    public function rejectPayoutRequest(PayoutRequest $payoutRequest, ?string $reason = null): PayoutRequest
+    {
+        if ($payoutRequest->status !== 'pending') {
+            throw new \Exception('This payout request is already processed.');
+        }
+
+        $wallet = TrainerWallet::where('user_id', $payoutRequest->user_id)->firstOrFail();
+
+        return DB::transaction(function () use ($payoutRequest, $wallet, $reason) {
+            // Unfreeze pending payout & restore back to available balance
+            $wallet->decrement('pending_payout', $payoutRequest->amount);
+            $wallet->increment('balance', $payoutRequest->amount);
+
+            $payoutRequest->update([
+                'status' => 'rejected',
+                'notes' => $reason ?? 'Payout request rejected by admin.',
+            ]);
+
+            return $payoutRequest;
+        });
+    }
+
+    /**
+     * Get all payout requests for Admin panel listing.
+     */
+    public function getAllPayoutRequests(): Collection
+    {
+        return PayoutRequest::with('user')->latest()->get();
     }
 }

@@ -14,12 +14,14 @@ class TrainerWalletResource extends JsonResource
     {
         $wallet = $this['wallet'];
         $transactions = $this['transactions'];
+        $payoutRequests = $this['payout_requests'] ?? collect();
 
         return [
             'wallet' => [
                 'id' => $wallet->id,
                 'trainer_id' => $wallet->user_id,
                 'balance' => (float) $wallet->balance,
+                'pending_payout' => (float) ($wallet->pending_payout ?? 0.00),
                 'total_earned' => (float) $wallet->total_earned,
                 'currency' => 'EGP',
             ],
@@ -36,6 +38,7 @@ class TrainerWalletResource extends JsonResource
                     'created_at' => $txn->created_at?->toIso8601String(),
                 ];
             }),
+            'payout_requests' => PayoutRequestResource::collection($payoutRequests),
         ];
     }
 }

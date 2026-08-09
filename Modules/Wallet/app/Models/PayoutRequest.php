@@ -5,28 +5,27 @@ namespace Modules\Wallet\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class TrainerWallet extends Model
+class PayoutRequest extends Model
 {
     protected $fillable = [
         'user_id',
-        'balance',
-        'total_earned',
-        'pending_payout',
-    ];
-    protected $casts = [
-        'balance' => 'decimal:2',
-        'total_earned' => 'decimal:2',
+        'amount',
+        'payment_method',
+        'account_details',
+        'status',
+        'notes',
     ];
 
+    protected $casts = [
+        'amount' => 'decimal:2',
+    ];
+
+    /**
+     * Relationship: The trainer who submitted this payout request.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(WalletTransaction::class);
     }
 }

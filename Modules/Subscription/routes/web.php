@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Subscription\Http\Controllers\Admin\AdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Admin\AdminSubscriptionPlanController;
+use Modules\Subscription\Http\Controllers\BookingController;
 use Modules\Subscription\Http\Controllers\SubscriptionController;
 
 /*
@@ -18,9 +19,9 @@ Route::get('checkout/{plan}', [SubscriptionController::class, 'checkout'])->midd
 Route::middleware(['auth'])->group(function () {
     Route::post('subscriptions', [SubscriptionController::class, 'subscribe'])->name('subscriptions.store');
 
-    // Private Trainer Bookings Page
-    Route::get('bookings', [SubscriptionController::class, 'bookings'])->name('bookings.index');
-    Route::post('bookings', [SubscriptionController::class, 'bookSession'])->name('bookings.store');
+    // Private Trainer Bookings Page (Using Independent BookingController)
+    Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
 
     // Admin Only Subscription Plans & Gym Schedules Management Routes
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {

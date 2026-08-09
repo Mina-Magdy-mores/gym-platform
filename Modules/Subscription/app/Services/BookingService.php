@@ -30,7 +30,7 @@ class BookingService
      */
     public function getUserBookings(User $user): Collection
     {
-        return Booking::with(['user', 'trainer', 'walletTransaction'])
+        return Booking::with(['user', 'trainer', 'walletTransaction', 'payment'])
             ->where(function ($query) use ($user) {
                 $query->where('user_id', $user->id)
                     ->orWhere('trainer_id', $user->id);
@@ -40,7 +40,7 @@ class BookingService
     }
 
     /**
-     * Book a private trainer session with concurrency pessimistic locking & auto-credit trainer wallet.
+     * Book a private trainer session with concurrency pessimistic locking, benefit deduction & auto-credit trainer wallet.
      */
     public function bookTrainerSession(User $user, array $data): Booking
     {
@@ -50,7 +50,7 @@ class BookingService
             $startTime = $data['start_time'];
             $endTime = $data['end_time'];
 
-            // Pessimistic Concurrency Lock: Prevents double-booking during overlapping intervals
+            // 1. Pessimistic Concurrency Lock: Prevents double-booking during overlapping intervals
             $overlappingBookingExists = Booking::where('trainer_id', $trainerId)
                 ->where('booking_date', $bookingDate)
                 ->where('status', '!=', 'cancelled')
@@ -65,21 +65,57 @@ class BookingService
                 throw new \Exception('The selected trainer is already booked for this specific time slot.');
             }
 
+            $trainer = User::findOrFail($trainerId);
+            $sessionPrice = (float) ($trainer->session_rate ?? $data['price'] ?? 200.00);
+            $activeSub = $user->activeSubscription;
+
+            // CASE 1: Member has active subscription with remaining PT sessions -> Deduct 1 session & Confirm Immediately
+            if ($activeSub && $activeSub->remaining_pt_sessions > 0) {
+                $activeSub->decrement('remaining_pt_sessions');
+
+                $booking = Booking::create([
+                    'user_id' => $user->id,
+                    'trainer_id' => $trainerId,
+                    'booking_date' => $bookingDate,
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
+                    'status' => 'confirmed',
+                    'price' => $sessionPrice,
+                    'notes' => $data['notes'] ?? 'Booked from active subscription PT balance.',
+                ]);
+
+                // Auto-credit Trainer Wallet with 85% payout and 15% platform commission
+                $this->walletService->creditTrainerForSession($booking);
+
+                return $booking;
+            }
+
+            // CASE 2: Member has 0 PT sessions -> Fallback throw exception or return response
+            throw new \Exception('OUT_OF_POCKET_PAYMENT_REQUIRED');
+        });
+    }
+
+    /**
+     * Confirm and record PT session booking after successful out-of-pocket payment gateway execution.
+     */
+    public function confirmPTSessionAfterPayment(User $user, User $trainer, array $bookingData): Booking
+    {
+        return DB::transaction(function () use ($user, $trainer, $bookingData) {
+            $sessionPrice = (float) ($trainer->session_rate ?? $bookingData['price'] ?? 200.00);
+
             $booking = Booking::create([
                 'user_id' => $user->id,
-                'trainer_id' => $trainerId,
-                'booking_date' => $bookingDate,
-                'start_time' => $startTime,
-                'end_time' => $endTime,
+                'trainer_id' => $trainer->id,
+                'booking_date' => $bookingData['booking_date'],
+                'start_time' => $bookingData['start_time'],
+                'end_time' => $bookingData['end_time'],
                 'status' => 'confirmed',
-                'price' => $data['price'] ?? 0.00,
-                'notes' => $data['notes'] ?? null,
+                'price' => $sessionPrice,
+                'notes' => $bookingData['notes'] ?? 'Paid out-of-pocket via payment gateway.',
             ]);
 
-            // Auto-credit Trainer Wallet with 15% platform commission deduction
-            if ($booking->price > 0) {
-                $this->walletService->creditTrainerForSession($booking);
-            }
+            // Credit 85% to Trainer Wallet and 15% platform commission
+            $this->walletService->creditTrainerForSession($booking);
 
             return $booking;
         });

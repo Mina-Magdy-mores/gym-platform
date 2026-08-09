@@ -9,37 +9,50 @@ use Modules\Payment\DTOs\PaymentResponse;
 class PaymobAdapter implements PaymentGatewayInterface
 {
     protected string $apiKey;
-    protected int $integrationId;
-    protected int $iframeId;
+    protected string $integrationId;
+    protected string $iframeId;
     protected string $hmacSecret;
     protected string $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey = (string) config('services.paymob.api_key', '');
-        $this->integrationId = (int) config('services.paymob.integration_id', 0);
-        $this->iframeId = (int) config('services.paymob.iframe_id', 0);
-        $this->hmacSecret = (string) config('services.paymob.hmac_secret', '');
-        $this->baseUrl = (string) config('services.paymob.base_url', 'https://accept.paymob.com/api');
+        $this->apiKey = config('services.paymob.api_key', env('PAYMOB_API_KEY'));
+        $this->integrationId = config('services.paymob.integration_id', env('PAYMOB_INTEGRATION_ID'));
+        $this->iframeId = config('services.paymob.iframe_id', env('PAYMOB_IFRAME_ID'));
+        $this->hmacSecret = config('services.paymob.hmac_secret', env('PAYMOB_HMAC_SECRET'));
+        $this->baseUrl = 'https://accept.paymob.com/api';
     }
 
+    /**
+     * Return gateway identifier name.
+     */
     public function getName(): string
     {
         return 'paymob';
     }
 
     /**
-     * Initiate payment processing via Paymob 3-Step API Flow with clean metadata.
+     * Initiate Paymob checkout flow via Intention API 3-step authentication protocol.
      */
     public function pay(float $amount, string $currency = 'EGP', array $metadata = []): PaymentResponse
     {
         $amountCents = (int) round($amount * 100);
-        $userId = $metadata['user_id'] ?? 0;
-        $planId = $metadata['subscription_plan_id'] ?? 0;
-        $action = $metadata['action_type'] ?? 'new';
-        
-        // Structured Universal Merchant Order Identifier
-        $merchantOrderId = "FITCLUB-U{$userId}-P{$planId}-A{$action}-T" . time();
+        $userId = $metadata['user_id'] ?? 1;
+        $type = $metadata['type'] ?? 'subscription';
+
+        // Structured Universal Merchant Order Identifier (Distinguishes PT Sessions from Subscriptions)
+        if ($type === 'pt_session') {
+            $trainerId = $metadata['trainer_id'] ?? 1;
+            $bookingDate = $metadata['booking_date'] ?? now()->toDateString();
+            $startTime = $metadata['start_time'] ?? '17:00';
+            $endTime = $metadata['end_time'] ?? '18:00';
+
+            $merchantOrderId = "FITCLUB-PT-U{$userId}-T{$trainerId}-D{$bookingDate}-S{$startTime}-E{$endTime}-T" . time();
+        } else {
+            $planId = $metadata['subscription_plan_id'] ?? 1;
+            $action = $metadata['action_type'] ?? 'new';
+            $merchantOrderId = "FITCLUB-U{$userId}-P{$planId}-A{$action}-T" . time();
+        }
 
         // 1. Step 1: Request Authentication Token
         $authResponse = Http::post($this->baseUrl . '/auth/tokens', [
@@ -78,6 +91,10 @@ class PaymobAdapter implements PaymentGatewayInterface
             $lastName = $lastName . ' Member';
         }
 
+        $street = $metadata['booking_date'] ?? 'NA';
+        $floor = $metadata['start_time'] ?? 'NA';
+        $building = $metadata['end_time'] ?? 'NA';
+
         // 3. Step 3: Request Payment Key with Customer Billing Data
         $keyResponse = Http::post($this->baseUrl . '/acceptance/payment_keys', [
             'auth_token' => $authToken,
@@ -89,9 +106,9 @@ class PaymobAdapter implements PaymentGatewayInterface
                 'last_name' => $lastName,
                 'email' => $metadata['email'] ?? 'user@example.com',
                 'phone_number' => $metadata['phone_number'] ?? '+201000000000',
-                'floor' => 'NA',
-                'building' => 'NA',
-                'street' => 'NA',
+                'floor' => $floor,
+                'building' => $building,
+                'street' => $street,
                 'apartment' => 'NA',
                 'city' => 'Cairo',
                 'country' => 'EG',

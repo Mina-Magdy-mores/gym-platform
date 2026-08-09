@@ -3,8 +3,10 @@
 namespace Modules\Subscription\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Payment\Services\PaymentService;
 use Modules\Subscription\Http\Requests\BookSessionRequest;
 use Modules\Subscription\Services\BookingService;
 use Modules\Subscription\Transformers\BookingResource;
@@ -15,10 +17,12 @@ class ApiBookingController extends Controller
     use ApiResponseTrait;
 
     protected BookingService $bookingService;
+    protected PaymentService $paymentService;
 
-    public function __construct(BookingService $bookingService)
+    public function __construct(BookingService $bookingService, PaymentService $paymentService)
     {
         $this->bookingService = $bookingService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -36,7 +40,7 @@ class ApiBookingController extends Controller
     }
 
     /**
-     * Book a private trainer session with concurrency check.
+     * Book a private trainer session with concurrency check & out-of-pocket payment fallback.
      */
     public function store(BookSessionRequest $request): JsonResponse
     {
@@ -49,11 +53,33 @@ class ApiBookingController extends Controller
             $booking->load(['user', 'trainer']);
 
             $data = [
+                'requires_payment' => false,
                 'booking' => new BookingResource($booking),
             ];
 
             return $this->successResponse($data, 'Trainer session booked successfully.', 201);
         } catch (\Exception $e) {
+            if ($e->getMessage() === 'OUT_OF_POCKET_PAYMENT_REQUIRED') {
+                $validated = $request->validated();
+                $trainer = User::findOrFail($validated['trainer_id']);
+
+                $paymentResponse = $this->paymentService->processPTSessionPayment(
+                    $request->user(),
+                    $trainer,
+                    $validated
+                );
+
+                $data = [
+                    'requires_payment' => true,
+                    'is_successful' => $paymentResponse->isSuccessful,
+                    'transaction_id' => $paymentResponse->transactionId,
+                    'redirect_url' => $paymentResponse->redirectUrl,
+                    'message' => '0 PT sessions remaining in plan. Please complete checkout to confirm booking.',
+                ];
+
+                return $this->successResponse($data, 'PT Session payment checkout initiated.', 202);
+            }
+
             return $this->errorResponse($e->getMessage(), 422);
         }
     }

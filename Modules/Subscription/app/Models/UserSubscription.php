@@ -5,6 +5,8 @@ namespace Modules\Subscription\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Payment\Models\Payment;
 
 class UserSubscription extends Model
 {
@@ -57,5 +59,13 @@ class UserSubscription extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(SubscriptionPlan::class, 'subscription_plan_id');
+    }
+
+    /**
+     * Relationship: The payment record associated with this subscription.
+     */
+    public function payment(): HasOne
+    {
+        return $this->hasOne(Payment::class, 'user_subscription_id');
     }
 }
