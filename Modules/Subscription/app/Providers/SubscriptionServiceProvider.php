@@ -3,9 +3,11 @@
 namespace Modules\Subscription\Providers;
 
 use Nwidart\Modules\Support\ModuleServiceProvider;
+use Modules\Subscription\Adapters\MockSmsAdapter;
 use Modules\Subscription\Console\Commands\ActivateQueuedSubscriptionsCommand;
 use Modules\Subscription\Console\Commands\SendBookingRemindersCommand;
 use Modules\Subscription\Console\Commands\CheckExpiringSubscriptionsCommand;
+use Modules\Subscription\Contracts\SmsGatewayInterface;
 
 class SubscriptionServiceProvider extends ModuleServiceProvider
 {
@@ -41,12 +43,14 @@ class SubscriptionServiceProvider extends ModuleServiceProvider
     ];
 
     /**
-     * Define module schedules.
-     * 
-     * @param $schedule
+     * Register module services and interface bindings.
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    public function register(): void
+    {
+        // Bind SMS Gateway Interface to active MockSmsAdapter for development environment
+        $this->app->bind(
+            SmsGatewayInterface::class,
+            MockSmsAdapter::class
+        );
+    }
 }
