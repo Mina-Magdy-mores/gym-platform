@@ -11,9 +11,11 @@ use Modules\Payment\Models\Payment;
 use Modules\Subscription\Models\SubscriptionPlan;
 use Modules\Subscription\Services\BookingService;
 use Modules\Subscription\Services\SubscriptionService;
+use Illuminate\Support\Facades\Notification;
 use Modules\Payment\Adapters\StripeAdapter;
 use Modules\Payment\Adapters\MockPaymentAdapter;
 use Modules\Payment\Adapters\PaymobAdapter;
+use Modules\Subscription\Notifications\NewMemberSubscribedNotification;
 
 class PaymentService
 {
@@ -87,6 +89,12 @@ class PaymentService
                 'status' => 'completed',
                 'payload' => $response->rawPayload,
             ]);
+
+            // Dispatch instant real-time notification to all platform Admins
+            $admins = User::role('Admin')->get();
+            if ($admins->isNotEmpty() && isset($userSub)) {
+                Notification::send($admins, new NewMemberSubscribedNotification($userSub));
+            }
         });
 
         return $response;
@@ -238,6 +246,12 @@ class PaymentService
                         'status' => 'completed',
                         'payload' => $rawPayload,
                     ]);
+
+                    // Dispatch instant real-time notification to all platform Admins on Webhook execution
+                    $admins = User::role('Admin')->get();
+                    if ($admins->isNotEmpty() && isset($userSub)) {
+                        Notification::send($admins, new NewMemberSubscribedNotification($userSub));
+                    }
                 }
             });
         }

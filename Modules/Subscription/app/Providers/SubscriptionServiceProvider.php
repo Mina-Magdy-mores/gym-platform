@@ -3,7 +3,9 @@
 namespace Modules\Subscription\Providers;
 
 use Nwidart\Modules\Support\ModuleServiceProvider;
-use Illuminate\Console\Scheduling\Schedule;
+use Modules\Subscription\Console\Commands\ActivateQueuedSubscriptionsCommand;
+use Modules\Subscription\Console\Commands\SendBookingRemindersCommand;
+use Modules\Subscription\Console\Commands\CheckExpiringSubscriptionsCommand;
 
 class SubscriptionServiceProvider extends ModuleServiceProvider
 {
@@ -22,7 +24,11 @@ class SubscriptionServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        ActivateQueuedSubscriptionsCommand::class,
+        SendBookingRemindersCommand::class,
+        CheckExpiringSubscriptionsCommand::class,
+    ];
 
     /**
      * Provider classes to register.

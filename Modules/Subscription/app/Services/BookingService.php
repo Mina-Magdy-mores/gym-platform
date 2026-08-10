@@ -5,6 +5,9 @@ namespace Modules\Subscription\Services;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Modules\Subscription\Notifications\NewSessionBookedNotification;
+use Modules\Subscription\Notifications\LowBenefitsBalanceNotification;
 use Modules\Subscription\Models\Booking;
 use Modules\Wallet\Services\WalletService;
 
@@ -87,6 +90,17 @@ class BookingService
                 // Auto-credit Trainer Wallet with 85% payout and 15% platform commission
                 $this->walletService->creditTrainerForSession($booking);
 
+                // Dispatch real-time notification to trainer
+                if ($trainer) {
+                    Notification::send($trainer, new NewSessionBookedNotification($booking));
+                }
+
+                // Dispatch low benefits warning notification to member if 1 PT session remains
+                $freshSub = $activeSub->fresh();
+                if ($freshSub && $freshSub->remaining_pt_sessions === 1) {
+                    Notification::send($user, new LowBenefitsBalanceNotification('PT Sessions', 1));
+                }
+
                 return $booking;
             }
 
@@ -116,6 +130,11 @@ class BookingService
 
             // Credit 85% to Trainer Wallet and 15% platform commission
             $this->walletService->creditTrainerForSession($booking);
+
+            // Dispatch real-time notification to trainer
+            if ($trainer) {
+                Notification::send($trainer, new NewSessionBookedNotification($booking));
+            }
 
             return $booking;
         });

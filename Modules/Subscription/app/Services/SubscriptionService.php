@@ -7,10 +7,12 @@ use App\Traits\CacheableServiceTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
 use Modules\Subscription\Models\GymRule;
 use Modules\Subscription\Models\GymSchedule;
 use Modules\Subscription\Models\SubscriptionPlan;
 use Modules\Subscription\Models\UserSubscription;
+use Modules\Subscription\Notifications\PlanUpgradedNotification;
 
 class SubscriptionService
 {
@@ -292,6 +294,14 @@ public function executeSubscriptionAction(User $user, SubscriptionPlan $newPlan,
             'remaining_kickboxing_classes' => $newPlan->kickboxing_classes,
             'remaining_nutrition_plans' => $newPlan->nutrition_plans,
         ]);
+
+        // Dispatch real-time notification to Member and platform Admins on plan upgrade
+        Notification::send($user, new PlanUpgradedNotification($activeSub));
+
+        $admins = User::role('Admin')->get();
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new PlanUpgradedNotification($activeSub));
+        }
 
         return $activeSub;
     }

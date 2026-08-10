@@ -5,10 +5,13 @@ namespace Modules\Wallet\Services;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Modules\Subscription\Models\Booking;
 use Modules\Wallet\Models\PayoutRequest;
 use Modules\Wallet\Models\TrainerWallet;
 use Modules\Wallet\Models\WalletTransaction;
+use Modules\Wallet\Notifications\PayoutApprovedNotification;
+use Modules\Wallet\Notifications\TrainerPayoutRequestedNotification;
 
 class WalletService
 {
@@ -90,7 +93,7 @@ class WalletService
             throw new \Exception('Insufficient wallet balance to request this payout.');
         }
 
-        return DB::transaction(function () use ($trainer, $wallet, $amount, $paymentMethod, $accountDetails) {
+        $payoutRequest = DB::transaction(function () use ($trainer, $wallet, $amount, $paymentMethod, $accountDetails) {
             // Freeze requested balance from available balance to pending_payout
             $wallet->decrement('balance', $amount);
             $wallet->increment('pending_payout', $amount);
@@ -104,6 +107,14 @@ class WalletService
                 'notes' => 'Payout requested via ' . strtoupper($paymentMethod),
             ]);
         });
+
+        // Dispatch real-time notification to all platform Admins
+        $admins = User::role('Admin')->get();
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new TrainerPayoutRequestedNotification($payoutRequest));
+        }
+
+        return $payoutRequest;
     }
 
     /**
@@ -134,6 +145,11 @@ class WalletService
             ]);
 
             $payoutRequest->update(['status' => 'approved']);
+
+            // Dispatch real-time notification to the trainer
+            if ($payoutRequest->user) {
+                Notification::send($payoutRequest->user, new PayoutApprovedNotification($payoutRequest));
+            }
 
             return $payoutRequest;
         });
