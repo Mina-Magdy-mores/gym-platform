@@ -25,9 +25,9 @@ class ApiPaymentController extends Controller
             $response = $this->paymentService->handleGatewayWebhook($request->all());
 
             return response()->json([
-                'status' => $response->isSuccessful ? 'success' : 'failed',
+                'status' => $response->isSuccessful ? 'success' : 'processed',
                 'message' => $response->message,
-            ], $response->isSuccessful ? 200 : 400);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',

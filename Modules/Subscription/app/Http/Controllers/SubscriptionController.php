@@ -94,7 +94,8 @@ class SubscriptionController extends Controller
 
             $paymentResponse = $this->paymentService->processSubscriptionPayment(
                 $request->user(),
-                $plan
+                $plan,
+                $request->input('gateway', 'paymob')
             );
 
             if ($paymentResponse->redirectUrl) {

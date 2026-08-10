@@ -53,7 +53,8 @@ class BookingController extends Controller
                 $paymentResponse = $this->paymentService->processPTSessionPayment(
                     $request->user(),
                     $trainer,
-                    $validated
+                    $validated,
+                    $request->input('gateway', 'paymob')
                 );
 
                 if ($paymentResponse->redirectUrl) {

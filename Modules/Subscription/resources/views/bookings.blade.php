@@ -11,7 +11,7 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
             <!-- Flash Alerts -->
             @if(session('status') === 'booked')
@@ -28,11 +28,13 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Book Session Form (1 Column) -->
-                <div class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <!-- Book Session Form (4 Columns) -->
+                <div class="xl:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
                     <div class="space-y-1 pb-4 border-b border-white/10">
-                        <h3 class="text-xl font-bold text-white uppercase">Book a Session</h3>
+                        <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
+                            <i class="ri-calendar-check-line neon-accent"></i> Book a Session
+                        </h3>
                         <p class="text-xs text-gray-400">Select your preferred trainer, date, and time slot.</p>
                     </div>
 
@@ -79,52 +81,90 @@
                             <textarea name="notes" rows="2" placeholder="e.g. Focus on chest & triceps workout" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]"></textarea>
                         </div>
 
+                        <!-- Payment Gateway Selector (If Out-of-pocket Payment Required) -->
+                        <div class="space-y-2 pt-2 border-t border-white/10" x-data="{ selectedGateway: 'paymob' }">
+                            <label class="text-[11px] font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="ri-bank-card-2-line neon-accent"></i> Payment Method (Out-of-Pocket)
+                            </label>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <label class="p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between"
+                                    :class="selectedGateway === 'paymob' ? 'bg-[#ff5b00]/10 border-[#ff5b00] text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" name="gateway" value="paymob" x-model="selectedGateway" class="text-[#ff5b00] focus:ring-[#ff5b00]">
+                                        <span class="font-bold text-xs">Paymob</span>
+                                    </div>
+                                    <i class="ri-bank-card-line text-sm text-[#ff5b00]"></i>
+                                </label>
+
+                                <label class="p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between"
+                                    :class="selectedGateway === 'stripe' ? 'bg-blue-500/10 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" name="gateway" value="stripe" x-model="selectedGateway" class="text-blue-500 focus:ring-blue-500">
+                                        <span class="font-bold text-xs">Stripe</span>
+                                    </div>
+                                    <i class="ri-visa-line text-sm text-blue-400"></i>
+                                </label>
+                            </div>
+                        </div>
+
                         <button type="submit" class="w-full py-3 rounded-full bg-neon-gradient text-white font-bold hover:opacity-90 transition shadow-lg text-sm bg-neon-glow cursor-pointer mt-2">
                             Confirm Booking
                         </button>
                     </form>
                 </div>
 
-                <!-- Bookings List (2 Columns) -->
-                <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
+                <!-- Bookings List (8 Columns - Full Wide Display) -->
+                <div class="xl:col-span-8 glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
                     <div class="flex items-center justify-between pb-4 border-b border-white/10">
-                        <h3 class="text-xl font-bold text-white uppercase">Your Confirmed Sessions</h3>
-                        <span class="text-xs text-gray-400 font-bold">{{ $bookings->count() }} Sessions</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
+                                <i class="ri-user-star-line neon-accent"></i> Your Confirmed Sessions
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Upcoming 1-on-1 personal training reservations</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-black">
+                            {{ $bookings->count() }} Sessions
+                        </span>
                     </div>
 
                     @if($bookings->count() > 0)
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             @foreach($bookings as $bk)
-                                <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between gap-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-12 h-12 rounded-full bg-neon-gradient flex items-center justify-center font-black text-white text-lg">
+                                @php
+                                    $rawName = $bk->trainer?->name ?? 'Trainer';
+                                    $cleanName = preg_replace('/^(Captain|Coach)\s+/i', '', $rawName);
+                                @endphp
+                                <div class="p-5 rounded-2xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-[#ff5b00]/40 transition shadow-xl">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-neon-gradient flex items-center justify-center font-black text-white text-xl shrink-0 shadow-lg">
                                             <i class="ri-user-star-line"></i>
                                         </div>
-                                        <div>
-                                            <div class="font-bold text-white text-sm">
-                                                {{ str_starts_with($bk->trainer?->name ?? '', 'Captain') ? $bk->trainer->name : 'Captain ' . ($bk->trainer?->name ?? 'Trainer') }}
+                                        <div class="space-y-1">
+                                            <div class="font-black text-white text-base tracking-wide">
+                                                Captain {{ $cleanName }}
                                             </div>
-                                            <div class="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
-                                                <span><i class="ri-calendar-line"></i> {{ $bk->booking_date }}</span>
-                                                <span><i class="ri-time-line"></i> {{ $bk->start_time }} - {{ $bk->end_time }}</span>
+                                            <div class="text-xs text-gray-300 flex flex-wrap items-center gap-4 font-mono">
+                                                <span class="inline-flex items-center gap-1"><i class="ri-calendar-line text-[#ff5b00]"></i> {{ $bk->booking_date }}</span>
+                                                <span class="inline-flex items-center gap-1"><i class="ri-time-line text-[#ff5b00]"></i> {{ $bk->start_time }} - {{ $bk->end_time }}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="text-right flex items-center gap-2">
+                                    <div class="flex flex-wrap items-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-white/10 justify-end">
                                         @if($bk->payment)
-                                            <a href="{{ route('invoices.show', $bk->payment->id) }}" target="_blank" class="px-2 py-1 rounded-lg bg-white/10 text-white hover:bg-white/20 transition text-[10px] font-bold inline-flex items-center gap-1">
+                                            <a href="{{ route('invoices.show', $bk->payment->id) }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition text-xs font-bold inline-flex items-center gap-1.5">
                                                 <i class="ri-eye-line"></i> View
                                             </a>
-                                            <a href="{{ route('invoices.download', $bk->payment->id) }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition text-[10px] font-bold inline-flex items-center gap-1">
-                                                <i class="ri-download-2-line"></i> PDF
+                                            <a href="{{ route('invoices.download', $bk->payment->id) }}" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition text-xs font-bold inline-flex items-center gap-1.5">
+                                                <i class="ri-download-2-line"></i> PDF Invoice
                                             </a>
                                         @else
-                                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-bold inline-flex items-center gap-1">
+                                            <span class="px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold inline-flex items-center gap-1.5">
                                                 <i class="ri-vip-crown-2-line"></i> Covered by Plan
                                             </span>
                                         @endif
-                                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold uppercase tracking-wider">
+                                        <span class="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider 
+                                            {{ $bk->status === 'confirmed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30' }}">
                                             {{ $bk->status }}
                                         </span>
                                     </div>

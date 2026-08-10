@@ -11,7 +11,7 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8" x-data="{ agreed: false }">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8" x-data="{ agreed: false, selectedGateway: 'paymob' }">
             
             <!-- Plan Action Dynamic Notice Banners -->
             @if(isset($prep) && $prep['action'] === 'upgrade')
@@ -182,6 +182,40 @@
                 <form method="POST" action="{{ route('subscriptions.store') }}" class="pt-6 border-t border-white/10 space-y-6">
                     @csrf
                     <input type="hidden" name="subscription_plan_id" value="{{ $plan->id }}">
+
+                    <!-- Payment Gateway Selector -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                            <i class="ri-bank-card-2-line neon-accent"></i> Select Payment Gateway / اختيار طريقة الدفع
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Paymob Option -->
+                            <label class="p-4 rounded-xl border cursor-pointer transition flex items-center justify-between"
+                                :class="selectedGateway === 'paymob' ? 'bg-[#ff5b00]/10 border-[#ff5b00] text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="gateway" value="paymob" x-model="selectedGateway" class="text-[#ff5b00] focus:ring-[#ff5b00]">
+                                    <div>
+                                        <span class="font-bold block text-sm text-white">Paymob</span>
+                                        <span class="text-[11px] text-gray-400">Vodafone Cash, InstaPay, Local Cards</span>
+                                    </div>
+                                </div>
+                                <i class="ri-bank-card-line text-xl text-[#ff5b00]"></i>
+                            </label>
+
+                            <!-- Stripe Option -->
+                            <label class="p-4 rounded-xl border cursor-pointer transition flex items-center justify-between"
+                                :class="selectedGateway === 'stripe' ? 'bg-blue-500/10 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="gateway" value="stripe" x-model="selectedGateway" class="text-blue-500 focus:ring-blue-500">
+                                    <div>
+                                        <span class="font-bold block text-sm text-white">Stripe</span>
+                                        <span class="text-[11px] text-gray-400">International Visa & MasterCard</span>
+                                    </div>
+                                </div>
+                                <i class="ri-visa-line text-xl text-blue-400"></i>
+                            </label>
+                        </div>
+                    </div>
 
                     <label class="flex items-start gap-3 cursor-pointer group p-4 rounded-xl bg-white/5 border border-white/10 hover:border-[#ff5b00]/40 transition">
                         <input type="checkbox" x-model="agreed" class="mt-1 rounded bg-white/10 border-white/20 text-[#ff5b00] focus:ring-[#ff5b00] focus:ring-offset-0 cursor-pointer">

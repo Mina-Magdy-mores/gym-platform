@@ -23,6 +23,7 @@ class SubscribePlanRequest extends FormRequest
     {
         return [
             'subscription_plan_id' => 'required|integer|exists:subscription_plans,id',
+            'gateway' => 'nullable|string|in:paymob,stripe,mock',
         ];
     }
 

@@ -28,6 +28,7 @@ class BookSessionRequest extends FormRequest
             'end_time' => 'required|date_format:H:i|after:start_time',
             'price' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:500',
+            'gateway' => 'nullable|string|in:paymob,stripe,mock',
         ];
     }
 

@@ -41,5 +41,10 @@ return [
         'hmac_secret' => env('PAYMOB_HMAC_SECRET'),
         'base_url' => 'https://accept.paymob.com/api',
     ],
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
 
 ];

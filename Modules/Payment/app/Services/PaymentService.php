@@ -11,6 +11,9 @@ use Modules\Payment\Models\Payment;
 use Modules\Subscription\Models\SubscriptionPlan;
 use Modules\Subscription\Services\BookingService;
 use Modules\Subscription\Services\SubscriptionService;
+use Modules\Payment\Adapters\StripeAdapter;
+use Modules\Payment\Adapters\MockPaymentAdapter;
+use Modules\Payment\Adapters\PaymobAdapter;
 
 class PaymentService
 {
@@ -29,13 +32,26 @@ class PaymentService
     }
 
     /**
+     * Resolve gateway adapter dynamically by name.
+     */
+    protected function getGatewayAdapter(string $gatewayName = 'paymob'): PaymentGatewayInterface
+    {
+        return match (strtolower($gatewayName)) {
+            'stripe' => new StripeAdapter(),
+            'mock' => new MockPaymentAdapter(),
+            default => new PaymobAdapter(),
+        };
+    }
+
+    /**
      * Process subscription plan checkout payment dynamically.
      */
-    public function processSubscriptionPayment(User $user, SubscriptionPlan $plan): PaymentResponse
+    public function processSubscriptionPayment(User $user, SubscriptionPlan $plan, string $gateway = 'paymob'): PaymentResponse
     {
         $prep = $this->subscriptionService->prepareSubscriptionAction($user, $plan);
+        $adapter = $this->getGatewayAdapter($gateway);
 
-        $response = $this->paymentGateway->pay(
+        $response = $adapter->pay(
             amount: $prep['amount_to_pay'],
             currency: $plan->currency ?? 'EGP',
             metadata: [
@@ -57,7 +73,7 @@ class PaymentService
             return $response;
         }
 
-        DB::transaction(function () use ($user, $plan, $prep, $response) {
+        DB::transaction(function () use ($user, $plan, $prep, $response, $adapter) {
             $userSub = $this->subscriptionService->executeSubscriptionAction($user, $plan, $prep['action']);
 
             Payment::create([
@@ -65,7 +81,7 @@ class PaymentService
                 'subscription_plan_id' => $plan->id,
                 'user_subscription_id' => $userSub->id ?? null,
                 'transaction_id' => $response->transactionId,
-                'gateway' => $this->paymentGateway->getName(),
+                'gateway' => $adapter->getName(),
                 'amount' => $prep['amount_to_pay'],
                 'currency' => $plan->currency ?? 'EGP',
                 'status' => 'completed',
@@ -79,11 +95,12 @@ class PaymentService
     /**
      * Process out-of-pocket PT session checkout payment dynamically.
      */
-    public function processPTSessionPayment(User $user, User $trainer, array $bookingData): PaymentResponse
+    public function processPTSessionPayment(User $user, User $trainer, array $bookingData, string $gateway = 'paymob'): PaymentResponse
     {
         $sessionPrice = (float) ($trainer->session_rate ?? $bookingData['price'] ?? 200.00);
+        $adapter = $this->getGatewayAdapter($gateway);
 
-        $response = $this->paymentGateway->pay(
+        $response = $adapter->pay(
             amount: $sessionPrice,
             currency: 'EGP',
             metadata: [
@@ -109,7 +126,7 @@ class PaymentService
             return $response;
         }
 
-        DB::transaction(function () use ($user, $trainer, $sessionPrice, $bookingData, $response) {
+        DB::transaction(function () use ($user, $trainer, $sessionPrice, $bookingData, $response, $adapter) {
             $booking = $this->bookingService->confirmPTSessionAfterPayment($user, $trainer, $bookingData);
 
             Payment::create([
@@ -117,7 +134,7 @@ class PaymentService
                 'subscription_plan_id' => null,
                 'booking_id' => $booking->id,
                 'transaction_id' => $response->transactionId,
-                'gateway' => $this->paymentGateway->getName(),
+                'gateway' => $adapter->getName(),
                 'amount' => $sessionPrice,
                 'currency' => 'EGP',
                 'status' => 'completed',
@@ -135,12 +152,29 @@ class PaymentService
     {
         Log::info('Incoming Gateway Webhook Payload:', $payload);
 
-        $response = $this->paymentGateway->handleWebhook($payload);
+        $isStripe = isset($payload['object']) && ($payload['object'] === 'event' || isset($payload['type']));
+        $adapter = $isStripe ? new \Modules\Payment\Adapters\StripeAdapter() : new \Modules\Payment\Adapters\PaymobAdapter();
+
+        $response = $adapter->handleWebhook($payload);
 
         if ($response->isSuccessful) {
             DB::transaction(function () use ($response) {
-                $obj = $response->rawPayload['obj'] ?? $response->rawPayload;
-                $merchantOrderId = $obj['order']['merchant_order_id'] ?? '';
+                $rawPayload = $response->rawPayload;
+
+                // Dual resolution for Stripe vs Paymob Webhook payload structures
+                $isStripe = isset($rawPayload['object']) && ($rawPayload['object'] === 'event' || isset($rawPayload['type']));
+
+                if ($isStripe) {
+                    $eventObj = $rawPayload['data']['object'] ?? [];
+                    $merchantOrderId = $eventObj['client_reference_id'] ?? $eventObj['metadata']['merchant_order_id'] ?? '';
+                    $amountPaid = isset($eventObj['amount_total']) ? ($eventObj['amount_total'] / 100) : (isset($eventObj['amount']) ? ($eventObj['amount'] / 100) : 0);
+                    $currency = strtoupper($eventObj['currency'] ?? 'EGP');
+                } else {
+                    $obj = $rawPayload['obj'] ?? $rawPayload;
+                    $merchantOrderId = $obj['order']['merchant_order_id'] ?? '';
+                    $amountPaid = isset($obj['amount_cents']) ? ($obj['amount_cents'] / 100) : 0;
+                    $currency = strtoupper($obj['currency'] ?? 'EGP');
+                }
 
                 // 1. Check if this is a PT Session out-of-pocket payment: FITCLUB-PT-U{userId}-T{trainerId}...
                 if (str_contains($merchantOrderId, 'FITCLUB-PT-')) {
@@ -161,20 +195,20 @@ class PaymentService
                             'booking_date' => $bookingDate,
                             'start_time' => $startTime,
                             'end_time' => $endTime,
-                            'price' => isset($obj['amount_cents']) ? ($obj['amount_cents'] / 100) : 200.00,
-                            'notes' => 'Confirmed via Paymob Webhook PT Payment.',
+                            'price' => $amountPaid > 0 ? $amountPaid : 200.00,
+                            'notes' => 'Confirmed via Gateway Webhook PT Payment.',
                         ]);
 
                         Payment::create([
                             'user_id' => $user->id,
                             'subscription_plan_id' => null,
                             'booking_id' => $booking->id,
-                            'transaction_id' => (string) ($response->transactionId ?? $obj['id'] ?? ('TXN-PT-' . time())),
-                            'gateway' => $this->paymentGateway->getName(),
-                            'amount' => isset($obj['amount_cents']) ? ($obj['amount_cents'] / 100) : 0,
-                            'currency' => $obj['currency'] ?? 'EGP',
+                            'transaction_id' => (string) ($response->transactionId ?? 'TXN-PT-' . time()),
+                            'gateway' => $isStripe ? 'stripe' : 'paymob',
+                            'amount' => $amountPaid,
+                            'currency' => $currency,
                             'status' => 'completed',
-                            'payload' => $response->rawPayload,
+                            'payload' => $rawPayload,
                         ]);
                     }
                     return;
@@ -197,12 +231,12 @@ class PaymentService
                         'user_id' => $user->id,
                         'subscription_plan_id' => $plan->id,
                         'user_subscription_id' => $userSub->id ?? null,
-                        'transaction_id' => (string) ($response->transactionId ?? $obj['id'] ?? ('TXN-' . time())),
-                        'gateway' => $this->paymentGateway->getName(),
-                        'amount' => isset($obj['amount_cents']) ? ($obj['amount_cents'] / 100) : 0,
-                        'currency' => $obj['currency'] ?? 'EGP',
+                        'transaction_id' => (string) ($response->transactionId ?? 'TXN-' . time()),
+                        'gateway' => $isStripe ? 'stripe' : 'paymob',
+                        'amount' => $amountPaid,
+                        'currency' => $currency,
                         'status' => 'completed',
-                        'payload' => $response->rawPayload,
+                        'payload' => $rawPayload,
                     ]);
                 }
             });

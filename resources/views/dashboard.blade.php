@@ -362,7 +362,9 @@
                         <tbody class="divide-y divide-white/5 font-semibold text-gray-300">
                             @forelse($memberPayments as $mp)
                                 <tr class="hover:bg-white/5 transition">
-                                    <td class="py-4 px-4 font-mono font-bold text-white">#{{ $mp->transaction_id }}</td>
+                                    <td class="py-4 px-4 font-mono font-bold text-white max-w-[140px] truncate" title="{{ $mp->transaction_id }}">
+                                        #{{ \Illuminate\Support\Str::limit($mp->transaction_id, 14, '...') }}
+                                    </td>
                                     <td class="py-4 px-4 font-bold text-white">
                                         @if($mp->booking_id)
                                             <span class="text-purple-400"><i class="ri-user-star-line"></i> PT Session - Coach {{ $mp->booking->trainer->name ?? '' }}</span>

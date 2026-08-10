@@ -160,7 +160,9 @@
                         <tbody class="divide-y divide-white/5 font-semibold text-gray-300">
                             @forelse($payments as $p)
                                 <tr class="hover:bg-white/5 transition">
-                                    <td class="py-4 px-4 font-mono font-bold text-white">#{{ $p->transaction_id }}</td>
+                                    <td class="py-4 px-4 font-mono font-bold text-white" title="{{ $p->transaction_id }}">
+                                        #{{ \Illuminate\Support\Str::limit($p->transaction_id, 16, '...') }}
+                                    </td>
                                     <td class="py-4 px-4">
                                         <div class="font-bold text-white text-sm">{{ $p->user->name ?? 'Member' }}</div>
                                         <div class="text-[11px] text-gray-400 font-mono">{{ $p->user->email ?? '' }}</div>
