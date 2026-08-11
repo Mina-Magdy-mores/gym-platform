@@ -86,4 +86,22 @@ class BookingController extends Controller
 
         return redirect()->route('bookings.index')->with('error', $result['message']);
     }
+
+    /**
+     * Mark a booking session as completed (Trainer/Admin action).
+     */
+    public function complete(Request $request, Booking $booking): RedirectResponse
+    {
+        if ($request->user()->id !== $booking->trainer_id && !$request->user()->hasRole('Admin')) {
+            abort(403, 'Only certified trainers or admins can mark sessions as completed.');
+        }
+
+        $result = $this->bookingService->completeBooking($booking);
+
+        if ($result['status']) {
+            return redirect()->route('bookings.index')->with('success', $result['message']);
+        }
+
+        return redirect()->route('bookings.index')->with('error', $result['message']);
+    }
 }

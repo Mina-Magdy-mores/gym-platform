@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Subscription\Http\Controllers\Admin\AdminBookingController;
 use Modules\Subscription\Http\Controllers\Admin\AdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Admin\AdminSubscriptionPlanController;
 use Modules\Subscription\Http\Controllers\BookingController;
@@ -29,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::patch('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+    Route::patch('bookings/{booking}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
 
     // Admin Only Subscription Plans & Gym Schedules Management Routes
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
@@ -47,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('gym-schedules', [AdminGymScheduleController::class, 'store'])->name('admin.schedules.store');
         Route::get('gym-schedules/{id}/edit', [AdminGymScheduleController::class, 'edit'])->name('admin.schedules.edit');
         Route::put('gym-schedules/{id}', [AdminGymScheduleController::class, 'update'])->name('admin.schedules.update');
-        Route::delete('gym-schedules/{id}', [AdminGymScheduleController::class, 'destroy'])->name('admin.schedules.destroy');
+        // Master Admin Bookings Control Panel
+        Route::get('bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
     });
 });

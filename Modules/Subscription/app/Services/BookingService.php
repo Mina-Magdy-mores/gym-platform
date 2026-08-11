@@ -176,7 +176,7 @@ class BookingService
                 } else {
                     // Scenario B: Paid booking -> Mark as refund_pending or execute refund
                     $booking->refund_status = 'pending';
-                    $booking->refund_method = $refundMethod ?? 'instapay';
+                    $booking->refund_method = $ref0undMethod ?? 'instapay';
                     $booking->refunded_amount = $booking->price;
                 }
 
@@ -215,5 +215,36 @@ class BookingService
                 ? 'Booking cancelled successfully and refund/benefit recovery processed.' 
                 : 'Booking cancelled, but session is non-refundable as it was cancelled within 24 hours of session time.'
         ];
+    }
+
+    /**
+     * Mark a booking session as completed (Trainer/Admin action).
+     */
+    public function completeBooking(Booking $booking): array
+    {
+        if ($booking->status === 'completed') {
+            return ['status' => false, 'message' => 'Booking is already marked as completed.'];
+        }
+
+        if ($booking->status === 'cancelled') {
+            return ['status' => false, 'message' => 'Cannot complete a cancelled session.'];
+        }
+
+        $booking->update(['status' => 'completed']);
+
+        return [
+            'status' => true,
+            'message' => 'Session marked as completed successfully.'
+        ];
+    }
+
+    /**
+     * Get all platform session bookings with eager loading for Master Admin Control Panel.
+     */
+    public function getAllBookingsForAdmin(): Collection
+    {
+        return Booking::with(['user.activeSubscription.plan', 'trainer', 'walletTransaction', 'payment'])
+            ->latest()
+            ->get();
     }
 }

@@ -155,18 +155,55 @@
                                             <a href="{{ route('invoices.show', $bk->payment->id) }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition text-xs font-bold inline-flex items-center gap-1.5">
                                                 <i class="ri-eye-line"></i> View
                                             </a>
-                                            <a href="{{ route('invoices.download', $bk->payment->id) }}" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition text-xs font-bold inline-flex items-center gap-1.5">
-                                                <i class="ri-download-2-line"></i> PDF Invoice
-                                            </a>
                                         @else
                                             <span class="px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold inline-flex items-center gap-1.5">
                                                 <i class="ri-vip-crown-2-line"></i> Covered by Plan
                                             </span>
                                         @endif
-                                        <span class="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider 
-                                            {{ $bk->status === 'confirmed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30' }}">
-                                            {{ $bk->status }}
-                                        </span>
+
+                                        @switch($bk->status)
+                                            @case('confirmed')
+                                                <span class="px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                                    Confirmed
+                                                </span>
+                                                @break
+                                            @case('completed')
+                                                <span class="px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                                    Completed
+                                                </span>
+                                                @break
+                                            @case('cancelled')
+                                                <span class="px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                                    Cancelled
+                                                </span>
+                                                @break
+                                            @default
+                                                <span class="px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                                                    {{ ucfirst($bk->status) }}
+                                                </span>
+                                        @endswitch
+
+                                        @if($bk->status === 'confirmed')
+                                            <!-- Trainer Mark as Completed Action -->
+                                            @if(Auth::user()->id === $bk->trainer_id || Auth::user()->hasRole('admin'))
+                                                <form action="{{ route('bookings.complete', $bk->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-white transition text-xs font-bold inline-flex items-center gap-1 cursor-pointer">
+                                                        <i class="ri-checkbox-circle-line"></i> Complete
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            <!-- Cancel Session Action -->
+                                            <form action="{{ route('bookings.cancel', $bk->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this session?');">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="px-3 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white transition text-xs font-bold inline-flex items-center gap-1 cursor-pointer">
+                                                    <i class="ri-close-circle-line"></i> Cancel
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach

@@ -41,6 +41,9 @@
                         <a href="{{ route('admin.payouts.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.payouts.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
                             <i class="ri-bank-card-line text-sm"></i> Admin Payouts
                         </a>
+                        <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.bookings.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-calendar-event-line text-sm"></i> Admin Bookings
+                        </a>
                     @endrole
                 </div>
             </div>
@@ -150,6 +153,9 @@
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('admin.payouts.index')">
                                 Manage Trainer Payouts
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('admin.bookings.index')">
+                                Manage Session Bookings
                             </x-dropdown-link>
                         @endrole
 
