@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function () {
         // Trainer Bookings
         Route::get('bookings', [ApiBookingController::class, 'index']);
         Route::post('bookings', [ApiBookingController::class, 'store']);
+        Route::post('bookings/{booking}/cancel', [ApiBookingController::class, 'cancel']);
 
         // Admin Only API Management Endpoints (Plans & Schedules CRUD)
         Route::middleware(['role:admin'])->prefix('admin')->group(function () {

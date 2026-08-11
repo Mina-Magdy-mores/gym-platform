@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Payment\Services\PaymentService;
 use Modules\Subscription\Http\Requests\BookSessionRequest;
+use Modules\Subscription\Models\Booking;
 use Modules\Subscription\Services\BookingService;
 
 class BookingController extends Controller
@@ -66,5 +67,23 @@ class BookingController extends Controller
 
             return redirect()->route('bookings.index')->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * Cancel a booking session via Web interface.
+     */
+    public function cancel(Request $request, Booking $booking): RedirectResponse
+    {
+        if ($request->user()->id !== $booking->user_id && $request->user()->id !== $booking->trainer_id && !$request->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $result = $this->bookingService->cancelBooking($booking, $request->input('refund_method', 'instapay'));
+
+        if ($result['status']) {
+            return redirect()->route('bookings.index')->with('success', $result['message']);
+        }
+
+        return redirect()->route('bookings.index')->with('error', $result['message']);
     }
 }

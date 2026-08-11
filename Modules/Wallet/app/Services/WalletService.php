@@ -26,7 +26,9 @@ class WalletService
     public function creditTrainerForSession(Booking $booking): WalletTransaction
     {
         return DB::transaction(function () use ($booking) {
-            $grossAmount = (float) $booking->price;
+            $trainer = User::find($booking->trainer_id);
+            $sessionRate = (float) ($trainer->session_rate ?? 200.00);
+            $grossAmount = (float) ($booking->price > 0 ? $booking->price : $sessionRate);
             $commissionAmount = round($grossAmount * $this->commissionRate, 2);
             $netAmount = round($grossAmount - $commissionAmount, 2);
 

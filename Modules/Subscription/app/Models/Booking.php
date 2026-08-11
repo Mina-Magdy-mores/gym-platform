@@ -3,6 +3,7 @@
 namespace Modules\Subscription\Models;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,14 +24,35 @@ class Booking extends Model
         'status',
         'price',
         'notes',
+        'refund_status',
+        'refund_method',
+        'refunded_amount',
+        'refunded_at',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'price' => 'decimal:2',
+        'refunded_amount' => 'decimal:2',
+        'refunded_at' => 'datetime',
     ];
 
     /**
      * Scope a query to only include confirmed bookings.
      */
-    public function scopeConfirmed($query)
+    public function scopeConfirmed(Builder $query): Builder
     {
         return $query->where('status', 'confirmed');
+    }
+
+    /**
+     * Scope a query to only include cancelled bookings.
+     */
+    public function scopeCancelled(Builder $query): Builder
+    {
+        return $query->where('status', 'cancelled');
     }
 
     /**

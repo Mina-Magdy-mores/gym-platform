@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     // Private Trainer Bookings Page (Using Independent BookingController)
     Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::patch('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
 
     // Admin Only Subscription Plans & Gym Schedules Management Routes
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {

@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Payment\Services\PaymentService;
 use Modules\Subscription\Http\Requests\BookSessionRequest;
+use Modules\Subscription\Models\Booking;
 use Modules\Subscription\Services\BookingService;
 use Modules\Subscription\Transformers\BookingResource;
 use Modules\User\Traits\ApiResponseTrait;
@@ -83,5 +84,27 @@ class ApiBookingController extends Controller
 
             return $this->errorResponse($e->getMessage(), 422);
         }
+    }
+
+    /**
+     * Cancel a booking session via REST API.
+     */
+    public function cancel(Request $request, Booking $booking): JsonResponse
+    {
+        if ($request->user()->id !== $booking->user_id && $request->user()->id !== $booking->trainer_id && !$request->user()->hasRole('Admin')) {
+            return $this->errorResponse('Unauthorized action.', 403);
+        }
+
+        $result = $this->bookingService->cancelBooking($booking, $request->input('refund_method', 'instapay'));
+
+        if ($result['status']) {
+            $booking->refresh();
+            return $this->successResponse([
+                'booking' => new BookingResource($booking),
+                'is_eligible' => $result['is_eligible'],
+            ], $result['message']);
+        }
+
+        return $this->errorResponse($result['message'], 400);
     }
 }

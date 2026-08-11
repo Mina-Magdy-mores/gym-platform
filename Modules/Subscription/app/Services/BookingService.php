@@ -3,13 +3,17 @@
 namespace Modules\Subscription\Services;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Modules\Subscription\Notifications\NewSessionBookedNotification;
 use Modules\Subscription\Notifications\LowBenefitsBalanceNotification;
+use Modules\Subscription\Notifications\SessionCancelledNotification;
 use Modules\Subscription\Models\Booking;
+use Modules\Subscription\Models\UserSubscription;
 use Modules\Wallet\Services\WalletService;
+
 
 class BookingService
 {
@@ -83,7 +87,7 @@ class BookingService
                     'start_time' => $startTime,
                     'end_time' => $endTime,
                     'status' => 'confirmed',
-                    'price' => $sessionPrice,
+                    'price' => 0.00,
                     'notes' => $data['notes'] ?? 'Booked from active subscription PT balance.',
                 ]);
 
@@ -138,5 +142,78 @@ class BookingService
 
             return $booking;
         });
+    }
+    /**
+     * Cancel a booking session and execute refund / session recovery logic.
+     */
+    public function cancelBooking(Booking $booking, ?string $refundMethod = null): array
+    {
+        if ($booking->status === 'cancelled') {
+            return ['status' => false, 'message' => 'Booking is already cancelled.'];
+        }
+
+        $sessionDateTime = Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
+        $isEligibleForFullRefund = now()->diffInHours($sessionDateTime, false) >= 24;
+
+        DB::transaction(function () use ($booking, $isEligibleForFullRefund, $refundMethod) {
+            // 1. Mark booking as cancelled
+            $booking->status = 'cancelled';
+
+            if ($isEligibleForFullRefund) {
+                // Scenario A: Free subscription session -> Increment remaining sessions
+                if ($booking->price == 0) {
+                    $activeSub = UserSubscription::where('user_id', $booking->user_id)
+                        ->where('status', 'active')
+                        ->first();
+
+                    if ($activeSub) {
+                        $activeSub->increment('remaining_pt_sessions', 1);
+                    }
+                    $booking->refund_status = 'refunded';
+                    $booking->refund_method = 'session_restored';
+                    $booking->refunded_amount = 0;
+                    $booking->refunded_at = now();
+                } else {
+                    // Scenario B: Paid booking -> Mark as refund_pending or execute refund
+                    $booking->refund_status = 'pending';
+                    $booking->refund_method = $refundMethod ?? 'instapay';
+                    $booking->refunded_amount = $booking->price;
+                }
+
+                // Rollback trainer wallet transaction & balance if existed
+                if ($booking->walletTransaction) {
+                    $txn = $booking->walletTransaction;
+                    if ($txn->status === 'completed') {
+                        $wallet = $txn->wallet;
+                        if ($wallet) {
+                            $wallet->decrement('balance', $txn->net_amount);
+                            $wallet->decrement('total_earned', $txn->net_amount);
+                        }
+                        $txn->update(['status' => 'cancelled']);
+                    }
+                }
+            } else {
+                // Cancelled within 24h -> No refund granted to protect trainer time
+                $booking->refund_status = 'none';
+            }
+
+            $booking->save();
+
+            // Dispatch SessionCancelledNotification to member and trainer
+            if ($booking->user) {
+                Notification::send($booking->user, new SessionCancelledNotification($booking));
+            }
+            if ($booking->trainer) {
+                Notification::send($booking->trainer, new SessionCancelledNotification($booking));
+            }
+        });
+
+        return [
+            'status' => true,
+            'is_eligible' => $isEligibleForFullRefund,
+            'message' => $isEligibleForFullRefund 
+                ? 'Booking cancelled successfully and refund/benefit recovery processed.' 
+                : 'Booking cancelled, but session is non-refundable as it was cancelled within 24 hours of session time.'
+        ];
     }
 }
