@@ -3,7 +3,10 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>FIT CLUB - Gym & Digital Platform</title>
+        <title>FIT CLUB | Home</title>
+
+        <!-- Custom FIT CLUB Favicon -->
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff5b00'><path d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -113,7 +113,7 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-4">
-                <x-dropdown align="right" width="48" content-classes="py-1 glass-card border border-white/10 shadow-2xl bg-[#0b0f19]/95 backdrop-blur-2xl rounded-2xl overflow-hidden">
+                <x-dropdown align="right" width="48" content-classes="py-1 bg-[#0f172a] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden opacity-100 z-50">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center gap-3 px-3 py-2 border border-white/10 rounded-full text-sm font-bold text-white glass-card hover:border-[#ff5b00] transition duration-200 cursor-pointer">
                             @if(Auth::user()->getFirstMediaUrl('avatar', 'thumb'))
