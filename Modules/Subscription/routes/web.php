@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Subscription\Http\Controllers\Admin\AdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Admin\AdminSubscriptionPlanController;
 use Modules\Subscription\Http\Controllers\BookingController;
+use Modules\Subscription\Http\Controllers\NotificationController;
 use Modules\Subscription\Http\Controllers\SubscriptionController;
 
 /*
@@ -18,6 +19,11 @@ Route::get('checkout/{plan}', [SubscriptionController::class, 'checkout'])->midd
 
 Route::middleware(['auth'])->group(function () {
     Route::post('subscriptions', [SubscriptionController::class, 'subscribe'])->name('subscriptions.store');
+
+    // User Notifications Routes
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
 
     // Private Trainer Bookings Page (Using Independent BookingController)
     Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');

@@ -3,10 +3,13 @@
 namespace Modules\Subscription\Providers;
 
 use Nwidart\Modules\Support\ModuleServiceProvider;
-use Modules\Subscription\Adapters\MockSmsAdapter;
+use Modules\Subscription\Adapters\SmsMisrAdapter;
 use Modules\Subscription\Console\Commands\ActivateQueuedSubscriptionsCommand;
-use Modules\Subscription\Console\Commands\SendBookingRemindersCommand;
 use Modules\Subscription\Console\Commands\CheckExpiringSubscriptionsCommand;
+use Modules\Subscription\Console\Commands\SendBookingRemindersCommand;
+use Modules\Subscription\Console\Commands\TestCreateNotificationsCommand;
+use Modules\Subscription\Console\Commands\TestSendEmailCommand;
+use Modules\Subscription\Console\Commands\TestSendSmsCommand;
 use Modules\Subscription\Contracts\SmsGatewayInterface;
 
 class SubscriptionServiceProvider extends ModuleServiceProvider
@@ -30,6 +33,9 @@ class SubscriptionServiceProvider extends ModuleServiceProvider
         ActivateQueuedSubscriptionsCommand::class,
         SendBookingRemindersCommand::class,
         CheckExpiringSubscriptionsCommand::class,
+        TestSendEmailCommand::class,
+        TestCreateNotificationsCommand::class,
+        TestSendSmsCommand::class,
     ];
 
     /**
@@ -47,10 +53,12 @@ class SubscriptionServiceProvider extends ModuleServiceProvider
      */
     public function register(): void
     {
-        // Bind SMS Gateway Interface to active MockSmsAdapter for development environment
+        parent::register();
+
+        // Bind SMS Gateway Interface to active SmsMisrAdapter
         $this->app->bind(
             SmsGatewayInterface::class,
-            MockSmsAdapter::class
+            SmsMisrAdapter::class
         );
     }
 }

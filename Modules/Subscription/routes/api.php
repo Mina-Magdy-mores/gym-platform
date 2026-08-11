@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminSubscriptionPlanController;
 use Modules\Subscription\Http\Controllers\Api\ApiBookingController;
+use Modules\Subscription\Http\Controllers\Api\ApiNotificationController;
 use Modules\Subscription\Http\Controllers\Api\ApiSubscriptionController;
 
 /*
@@ -24,6 +25,11 @@ Route::prefix('v1')->group(function () {
         
         // Member Dashboard Real-time Benefits & Usage API
         Route::get('member/dashboard', [ApiSubscriptionController::class, 'memberDashboard']);
+
+        // Notifications API (Mobile Symmetry)
+        Route::get('notifications', [ApiNotificationController::class, 'index']);
+        Route::patch('notifications/{id}/read', [ApiNotificationController::class, 'markAsRead']);
+        Route::post('notifications/mark-all-read', [ApiNotificationController::class, 'markAllAsRead']);
 
         // Subscription Management
         Route::post('subscriptions', [ApiSubscriptionController::class, 'subscribe']);

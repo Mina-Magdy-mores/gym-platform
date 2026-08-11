@@ -20,7 +20,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements HasMedia
 {

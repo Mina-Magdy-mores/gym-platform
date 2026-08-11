@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use Modules\Subscription\Channels\SmsChannel;
 use Modules\Subscription\Models\Booking;
 
 class SessionReminderNotification extends Notification implements ShouldQueue
@@ -30,11 +31,22 @@ class SessionReminderNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * تحديد قنوات الإرسال المزدوجة (داتابيز وإيميل)
+     * تحديد قنوات الإرسال الثلاث (داتابيز وإيميل و SMS)
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', SmsChannel::class];
+    }
+
+    /**
+     * نص رسالة الـ SMS التنبيهية القابلة للإرسال للهواتف
+     */
+    public function toSms(object $notifiable): string
+    {
+        $isTrainer = ($notifiable->id === $this->booking->trainer_id);
+        $otherPartyName = $isTrainer ? $this->booking->user?->name : $this->booking->trainer?->name;
+
+        return "FIT CLUB Reminder: PT session with {$otherPartyName} on {$this->booking->booking_date} at {$this->booking->start_time}.";
     }
 
     /**
