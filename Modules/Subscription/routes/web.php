@@ -49,7 +49,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('gym-schedules', [AdminGymScheduleController::class, 'store'])->name('admin.schedules.store');
         Route::get('gym-schedules/{id}/edit', [AdminGymScheduleController::class, 'edit'])->name('admin.schedules.edit');
         Route::put('gym-schedules/{id}', [AdminGymScheduleController::class, 'update'])->name('admin.schedules.update');
+        Route::delete('gym-schedules/{id}', [AdminGymScheduleController::class, 'destroy'])->name('admin.schedules.destroy');
         // Master Admin Bookings Control Panel
         Route::get('bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
+        Route::post('bookings/{booking}/refund', [AdminBookingController::class, 'processRefund'])->name('admin.bookings.refund');
     });
 });

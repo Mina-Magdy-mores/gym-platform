@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminBookingController;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminSubscriptionPlanController;
 use Modules\Subscription\Http\Controllers\Api\ApiBookingController;
@@ -34,12 +35,13 @@ Route::prefix('v1')->group(function () {
         // Subscription Management
         Route::post('subscriptions', [ApiSubscriptionController::class, 'subscribe']);
 
-        // Trainer Bookings
+        // Trainer Bookings API
         Route::get('bookings', [ApiBookingController::class, 'index']);
         Route::post('bookings', [ApiBookingController::class, 'store']);
         Route::post('bookings/{booking}/cancel', [ApiBookingController::class, 'cancel']);
+        Route::post('bookings/{booking}/complete', [ApiBookingController::class, 'complete']);
 
-        // Admin Only API Management Endpoints (Plans & Schedules CRUD)
+        // Admin Only API Management Endpoints (Plans, Schedules & Bookings Refund Resolution)
         Route::middleware(['role:admin'])->prefix('admin')->group(function () {
             // Plans Management API
             Route::apiResource('plans', ApiAdminSubscriptionPlanController::class);
@@ -47,6 +49,10 @@ Route::prefix('v1')->group(function () {
 
             // Schedules Management API
             Route::apiResource('schedules', ApiAdminGymScheduleController::class);
+
+            // Master Bookings & Refund Resolution API
+            Route::get('bookings', [ApiAdminBookingController::class, 'index']);
+            Route::post('bookings/{booking}/refund', [ApiAdminBookingController::class, 'processRefund']);
         });
 
     });

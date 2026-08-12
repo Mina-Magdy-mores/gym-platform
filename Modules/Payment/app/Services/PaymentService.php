@@ -36,11 +36,12 @@ class PaymentService
     /**
      * Resolve gateway adapter dynamically by name.
      */
-    protected function getGatewayAdapter(string $gatewayName = 'paymob'): PaymentGatewayInterface
+    public function getGatewayAdapter(string $gatewayName = 'paymob'): PaymentGatewayInterface
     {
         return match (strtolower($gatewayName)) {
             'stripe' => new StripeAdapter(),
             'mock' => new MockPaymentAdapter(),
+            'paymob' => new PaymobAdapter(),
             default => new PaymobAdapter(),
         };
     }

@@ -28,9 +28,9 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                <!-- Book Session Form (4 Columns) -->
-                <div class="xl:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Book Session Form (4 Columns - Compact Side Display) -->
+                <div class="lg:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
                     <div class="space-y-1 pb-4 border-b border-white/10">
                         <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
                             <i class="ri-calendar-check-line neon-accent"></i> Book a Session
@@ -114,7 +114,7 @@
                 </div>
 
                 <!-- Bookings List (8 Columns - Full Wide Display) -->
-                <div class="xl:col-span-8 glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
+                <div class="lg:col-span-8 glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
                     <div class="flex items-center justify-between pb-4 border-b border-white/10">
                         <div>
                             <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">

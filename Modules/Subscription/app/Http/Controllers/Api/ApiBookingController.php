@@ -107,4 +107,23 @@ class ApiBookingController extends Controller
 
         return $this->errorResponse($result['message'], 400);
     }
+
+    /**
+     * Mark a booking session as completed via REST API (Trainer/Admin action).
+     */
+    public function complete(Request $request, Booking $booking): JsonResponse
+    {
+        if ($request->user()->id !== $booking->trainer_id && !$request->user()->hasRole('Admin')) {
+            return $this->errorResponse('Only certified trainers or admins can mark sessions as completed.', 403);
+        }
+
+        $result = $this->bookingService->completeBooking($booking);
+
+        if ($result['status']) {
+            $booking->refresh();
+            return $this->successResponse(new BookingResource($booking), $result['message']);
+        }
+
+        return $this->errorResponse($result['message'], 400);
+    }
 }

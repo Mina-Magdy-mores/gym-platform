@@ -6,14 +6,16 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Modules\Subscription\Notifications\NewSessionBookedNotification;
 use Modules\Subscription\Notifications\LowBenefitsBalanceNotification;
 use Modules\Subscription\Notifications\SessionCancelledNotification;
+use Modules\Payment\Models\Payment;
+use Modules\Payment\Services\PaymentService;
 use Modules\Subscription\Models\Booking;
 use Modules\Subscription\Models\UserSubscription;
 use Modules\Wallet\Services\WalletService;
-
 
 class BookingService
 {
@@ -246,5 +248,73 @@ class BookingService
         return Booking::with(['user.activeSubscription.plan', 'trainer', 'walletTransaction', 'payment'])
             ->latest()
             ->get();
+    }
+
+    /**
+     * Process and resolve refund for a booking session (Admin action).
+     * Automatically resolves gateway adapter (Paymob vs Stripe) or manual methods (InstaPay/Vodafone/Cash).
+     */
+    public function processBookingRefund(Booking $booking, string $refundMethod = 'auto_gateway', ?string $adminNotes = null): array
+    {
+        if ($booking->refund_status === 'refunded') {
+            return ['status' => false, 'message' => 'Booking refund has already been resolved and processed.'];
+        }
+
+        $payment = $booking->payment;
+        $gatewayName = strtolower($payment->gateway ?? 'paymob');
+        $resolvedGateway = $refundMethod;
+
+        if ($refundMethod === 'auto_gateway') {
+            $resolvedGateway = 'auto_gateway (' . strtoupper($gatewayName) . ')';
+            $txnId = $payment->transaction_id ?? null;
+            $refundAmount = $booking->price > 0 ? $booking->price : ($payment->amount ?? 0);
+
+            if ($txnId && $refundAmount > 0) {
+                $adapter = app(PaymentService::class)->getGatewayAdapter($gatewayName);
+
+                Log::info("Executing Live Gateway API Refund via [{$gatewayName}] for TXN #{$txnId}, Amount: EGP {$refundAmount}");
+                $gatewayResponse = $adapter->refund($txnId, $refundAmount);
+
+                if (! $gatewayResponse->isSuccessful && app()->environment('production')) {
+                    throw new \Exception("Gateway Auto Refund API Failed: " . $gatewayResponse->message);
+                }
+            }
+        }
+
+        DB::transaction(function () use ($booking, $payment, $resolvedGateway, $adminNotes) {
+            $refundAmount = $booking->price > 0 ? $booking->price : ($payment->amount ?? 0);
+
+            $booking->update([
+                'refund_status' => 'refunded',
+                'refund_method' => $resolvedGateway,
+                'refunded_amount' => $refundAmount,
+                'refunded_at' => now(),
+            ]);
+
+            // Create negative ledger refund record in payments table for 100% accounting precision
+            if ($refundAmount > 0) {
+                Payment::create([
+                    'user_id' => $booking->user_id,
+                    'subscription_plan_id' => null,
+                    'booking_id' => $booking->id,
+                    'transaction_id' => 'REFUND-BK-' . $booking->id . '-' . time(),
+                    'gateway' => $resolvedGateway,
+                    'amount' => -abs($refundAmount),
+                    'currency' => $payment->currency ?? 'EGP',
+                    'status' => 'completed',
+                    'payload' => [
+                        'type' => 'refund',
+                        'refund_method' => $resolvedGateway,
+                        'notes' => $adminNotes ?? 'Admin resolved booking refund',
+                        'processed_at' => now()->toIso8601String(),
+                    ],
+                ]);
+            }
+        });
+
+        return [
+            'status' => true,
+            'message' => "Refund resolved and recorded successfully via [{$resolvedGateway}]."
+        ];
     }
 }

@@ -50,7 +50,7 @@
 
             <!-- Notifications Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-4">
-                <x-dropdown align="right" width="w-80" content-classes="py-0 bg-[#0f172a] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden shadow-2xl">
+                <x-dropdown align="right" width="w-80" content-classes="py-0 bg-[#12141c] border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden">
                     <x-slot name="trigger">
                         <button class="relative p-2 text-gray-300 hover:text-[#ff5b00] transition cursor-pointer">
                             <i class="ri-notification-3-line text-xl"></i>
@@ -63,7 +63,7 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <div class="px-4 py-3 border-b border-white/10 flex justify-between items-center bg-[#0f172a]">
+                        <div class="px-4 py-3 border-b border-white/10 flex justify-between items-center bg-[#1a1d28]/80">
                             <span class="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
                                 <i class="ri-notification-3-line text-[#ff5b00]"></i> Notifications
                             </span>
@@ -75,9 +75,9 @@
                             @endif
                         </div>
 
-                        <div class="max-h-72 overflow-y-auto divide-y divide-white/5 bg-[#0f172a]">
+                        <div class="max-h-72 overflow-y-auto divide-y divide-white/5 bg-[#12141c]">
                             @forelse(Auth::user()->notifications()->latest()->take(6)->get() as $notification)
-                                <div class="p-3.5 hover:bg-white/5 transition duration-150 flex items-start justify-between gap-3 overflow-hidden {{ $notification->read_at ? 'bg-[#0f172a] text-gray-300' : 'bg-white/[0.04] text-white' }}">
+                                <div class="p-3.5 hover:bg-white/5 transition duration-150 flex items-start justify-between gap-3 overflow-hidden {{ $notification->read_at ? 'bg-[#12141c] text-gray-300' : 'bg-white/[0.04] text-white' }}">
                                     <div class="flex-1 min-w-0 space-y-1">
                                         <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap break-words">
                                             @if(!$notification->read_at)
@@ -101,11 +101,11 @@
                                     @endif
                                 </div>
                             @empty
-                                <div class="p-6 text-center text-xs text-gray-400 font-bold bg-[#0f172a]">No notifications found</div>
+                                <div class="p-6 text-center text-xs text-gray-400 font-bold bg-[#12141c]">No notifications found</div>
                             @endforelse
                         </div>
 
-                        <div class="p-2 border-t border-white/10 bg-[#0f172a] text-center">
+                        <div class="p-2 border-t border-white/10 bg-[#1a1d28]/80 text-center">
                             <a href="{{ route('notifications.index') }}" class="text-[11px] font-black text-[#ff5b00] hover:text-white uppercase tracking-wider block py-1 transition">
                                 View All Notifications <i class="ri-arrow-right-s-line"></i>
                             </a>
@@ -116,59 +116,84 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-4">
-                <x-dropdown align="right" width="48" content-classes="py-1 bg-[#0f172a] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden opacity-100 z-50">
+                <x-dropdown align="right" width="60" content-classes="py-0 bg-[#12141c] border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden z-50">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center gap-3 px-3 py-2 border border-white/10 rounded-full text-sm font-bold text-white glass-card hover:border-[#ff5b00] transition duration-200 cursor-pointer">
+                        <button class="flex items-center gap-2.5 px-3.5 py-1.5 bg-[#22252e] border border-white/20 hover:border-[#ff5b00] rounded-full text-xs sm:text-sm font-bold text-white transition duration-200 cursor-pointer shadow-md overflow-hidden shrink-0">
                             @if(Auth::user()->getFirstMediaUrl('avatar', 'thumb'))
-                                <img src="{{ Auth::user()->getFirstMediaUrl('avatar', 'thumb') }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-[#ff5b00]">
+                                <img src="{{ Auth::user()->getFirstMediaUrl('avatar', 'thumb') }}" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-[#ff5b00] shrink-0">
                             @else
-                                <div class="w-8 h-8 rounded-full bg-neon-gradient flex items-center justify-center text-xs font-black">
+                                <div class="w-7 h-7 rounded-full bg-neon-gradient flex items-center justify-center text-[11px] font-black shrink-0">
                                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                 </div>
                             @endif
 
-                            <div>{{ Auth::user()->name }}</div>
+                            <span class="whitespace-nowrap font-bold">{{ Auth::user()->name }}</span>
 
-                            <i class="ri-arrow-down-s-line text-lg"></i>
+                            <i class="ri-arrow-down-s-line text-base text-gray-300 shrink-0"></i>
                         </button>
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                        <!-- User Profile Header -->
+                        <div class="px-4 py-3 bg-[#1a1d28]/80 border-b border-white/10 flex items-center gap-3">
+                            @if(Auth::user()->getFirstMediaUrl('avatar', 'thumb'))
+                                <img src="{{ Auth::user()->getFirstMediaUrl('avatar', 'thumb') }}" alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-[#ff5b00]">
+                            @else
+                                <div class="w-9 h-9 rounded-full bg-neon-gradient flex items-center justify-center text-xs font-black text-white">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <div class="min-w-0 flex-1">
+                                <div class="text-xs font-black text-white tracking-wide truncate">{{ Auth::user()->name }}</div>
+                                <div class="text-[10px] text-[#ff5b00] font-mono font-bold uppercase tracking-wider">{{ Auth::user()->getRoleNames()->first() ?? 'Member' }}</div>
+                            </div>
+                        </div>
 
-                        @hasanyrole('trainer|admin')
-                            <x-dropdown-link :href="route('wallet.index')">
-                                Earnings Wallet
+                        <div class="py-1">
+                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                <i class="ri-user-settings-line text-base text-[#ff5b00]"></i>
+                                <span>Profile Settings</span>
                             </x-dropdown-link>
-                        @endhasanyrole
 
-                        @role('admin')
-                            <x-dropdown-link :href="route('admin.plans.index')">
-                                Manage Subscription Plans
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('admin.schedules.index')">
-                                Manage Gym Schedules
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('admin.payouts.index')">
-                                Manage Trainer Payouts
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('admin.bookings.index')">
-                                Manage Session Bookings
-                            </x-dropdown-link>
-                        @endrole
+                            @hasanyrole('trainer|admin')
+                                <x-dropdown-link :href="route('wallet.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-wallet-3-line text-base text-[#ff5b00]"></i>
+                                    <span>Earnings Wallet</span>
+                                </x-dropdown-link>
+                            @endhasanyrole
+
+                            @role('admin')
+                                <x-dropdown-link :href="route('admin.plans.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-vip-crown-line text-base text-[#ff5b00]"></i>
+                                    <span>Manage Subscription Plans</span>
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.schedules.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-calendar-event-line text-base text-[#ff5b00]"></i>
+                                    <span>Manage Gym Schedules</span>
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.payouts.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-bank-card-line text-base text-[#ff5b00]"></i>
+                                    <span>Manage Trainer Payouts</span>
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.bookings.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-ticket-2-line text-base text-[#ff5b00]"></i>
+                                    <span>Manage Session Bookings</span>
+                                </x-dropdown-link>
+                            @endrole
+                        </div>
 
                         <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
+                        <div class="py-1 border-t border-white/10">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <x-dropdown-link :href="route('logout')"
+                                        onclick="event.preventDefault(); this.closest('form').submit();"
+                                        class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-red-400 hover:text-white hover:bg-red-500/20 transition">
+                                    <i class="ri-logout-box-r-line text-base text-red-400"></i>
+                                    <span>Log Out</span>
+                                </x-dropdown-link>
+                            </form>
+                        </div>
                     </x-slot>
                 </x-dropdown>
             </div>
