@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Modules\User\Http\Controllers\UserController;
+use Modules\User\Http\Controllers\Admin\AdminUserController;
 use Modules\User\Http\Controllers\Auth\AuthenticatedSessionController;
 use Modules\User\Http\Controllers\Auth\ConfirmablePasswordController;
 use Modules\User\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -13,8 +14,12 @@ use Modules\User\Http\Controllers\Auth\PasswordResetLinkController;
 use Modules\User\Http\Controllers\Auth\RegisteredUserController;
 use Modules\User\Http\Controllers\Auth\VerifyEmailController;
 
-Route::middleware(['auth', 'verified' , 'role:admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(function () {
     Route::resource('users', UserController::class)->names('user');
+    Route::get('all-users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::patch('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('admin.users.toggle-active');
+    Route::post('users/{user}/block', [AdminUserController::class, 'block'])->name('admin.users.block');
+    Route::post('users/{user}/unblock', [AdminUserController::class, 'unblock'])->name('admin.users.unblock');
 });
 
 Route::middleware('guest')->group(function () {

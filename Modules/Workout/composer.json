@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/workout",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Workout\\": "app/",
+            "Modules\\Workout\\Database\\Factories\\": "database/factories/",
+            "Modules\\Workout\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Workout\\Tests\\": "tests/"
+        }
+    }
+}

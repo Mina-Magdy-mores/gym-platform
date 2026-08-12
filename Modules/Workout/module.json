@@ -1,0 +1,11 @@
+{
+    "name": "Workout",
+    "alias": "workout",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Workout\\Providers\\WorkoutServiceProvider"
+    ],
+    "files": []
+}

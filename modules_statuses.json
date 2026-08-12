@@ -2,5 +2,6 @@
     "User": true,
     "Subscription": true,
     "Payment": true,
-    "Wallet": true
+    "Wallet": true,
+    "Workout": true
 }
