@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="max-w-[1700px] mx-auto flex items-center justify-between">
             <h2 class="font-black text-2xl text-white uppercase tracking-wider">
                 Admin <span class="neon-accent">Master Financial Ledger</span>
             </h2>
@@ -11,7 +11,7 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-[1700px] mx-auto sm:px-6 lg:px-8 space-y-8">
             
             <!-- Paymob-Style Analytics Overview Cards (Horizontal Grid) -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
