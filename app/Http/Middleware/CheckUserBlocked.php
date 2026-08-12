@@ -10,30 +10,37 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckUserBlocked
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Handle an incoming request for Web & Mobile APIs.
      */
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            $user = Auth::user();
+            // Read fresh status directly from database to catch immediate admin blocks
+            $user = Auth::user()->fresh();
 
-            if ($user->is_blocked) {
+            if ($user && $user->is_blocked) {
+                // Instantly revoke active Sanctum API tokens for Mobile App
+                if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
+                    $user->currentAccessToken()->delete();
+                }
+
+                $reason = $user->block_reason ? " Reason: {$user->block_reason}" : '';
+                $errorMessage = "Your account has been suspended by administration.{$reason}";
+
+                // Handle JSON API Requests for Mobile App
+                if ($request->expectsJson() || $request->is('api/*')) {
+                    return response()->json([
+                        'message' => $errorMessage,
+                    ], 403);
+                }
+
+                // Handle Web Requests
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                $reason = $user->block_reason ? " Reason: {$user->block_reason}" : '';
-
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => "Your account has been suspended by administration.{$reason}",
-                    ], 403);
-                }
-
                 return redirect()->route('login')->withErrors([
-                    'email' => "Your account has been suspended by administration.{$reason}",
+                    'email' => $errorMessage,
                 ]);
             }
         }

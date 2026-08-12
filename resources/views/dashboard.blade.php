@@ -265,6 +265,100 @@
                 </div>
             </div>
 
+            <!-- Member Active Workout Routine & Diet Plan Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Active Workout Routine Card -->
+                <div class="glass-card p-6 rounded-2xl border border-white/5 space-y-4 hover:border-[#ff5b00]/40 transition">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-2.5 rounded-xl bg-[#ff5b00]/20 text-[#ff5b00] text-xl">
+                                <i class="ri-dumbbell-line"></i>
+                            </span>
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Assigned Workout</span>
+                                <h4 class="text-base font-black text-white uppercase tracking-wide">
+                                    {{ Auth::user()->activeWorkoutRoutine?->title ?? 'No Active Routine Assigned' }}
+                                </h4>
+                            </div>
+                        </div>
+                        @if(Auth::user()->activeWorkoutRoutine)
+                            <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 text-[10px] font-black uppercase">
+                                {{ Auth::user()->activeWorkoutRoutine->exercises->count() }} Exercises
+                            </span>
+                        @endif
+                    </div>
+
+                    @if(Auth::user()->activeWorkoutRoutine)
+                        <div class="space-y-2 text-xs">
+                            <div class="text-gray-400 font-semibold">
+                                <span class="text-white font-bold">Goal:</span> {{ Auth::user()->activeWorkoutRoutine->goal ?? 'General Fitness' }}
+                            </div>
+                            <div class="space-y-1.5 pt-2 border-t border-white/5">
+                                @foreach(Auth::user()->activeWorkoutRoutine->exercises->take(4) as $ex)
+                                    <div class="p-2 rounded-lg bg-white/5 flex items-center justify-between text-[11px]">
+                                        <span class="font-bold text-white">{{ $ex->exercise_name }}</span>
+                                        <span class="text-[#ff5b00] font-mono font-bold">{{ $ex->sets }} Sets x {{ $ex->reps }} Reps</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-xs text-gray-400 italic">Your personal trainer has not assigned a custom workout routine yet.</p>
+                    @endif
+                </div>
+
+                <!-- Active Diet Plan Card -->
+                <div class="glass-card p-6 rounded-2xl border border-white/5 space-y-4 hover:border-green-500/40 transition">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-2.5 rounded-xl bg-green-500/20 text-green-400 text-xl">
+                                <i class="ri-restaurant-line"></i>
+                            </span>
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Assigned Diet Plan</span>
+                                <h4 class="text-base font-black text-white uppercase tracking-wide">
+                                    {{ Auth::user()->activeDietPlan?->title ?? 'No Active Diet Assigned' }}
+                                </h4>
+                            </div>
+                        </div>
+                        @if(Auth::user()->activeDietPlan)
+                            <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 text-[10px] font-black uppercase">
+                                {{ Auth::user()->activeDietPlan->daily_calories }} Kcal
+                            </span>
+                        @endif
+                    </div>
+
+                    @if(Auth::user()->activeDietPlan)
+                        <div class="space-y-3 text-xs">
+                            <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-black uppercase">
+                                <div class="p-2 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-gray-400">Protein</div>
+                                    <div class="text-green-400 font-bold text-xs mt-0.5">{{ Auth::user()->activeDietPlan->protein_grams }}g</div>
+                                </div>
+                                <div class="p-2 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-gray-400">Carbs</div>
+                                    <div class="text-yellow-400 font-bold text-xs mt-0.5">{{ Auth::user()->activeDietPlan->carbs_grams }}g</div>
+                                </div>
+                                <div class="p-2 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-gray-400">Fats</div>
+                                    <div class="text-purple-400 font-bold text-xs mt-0.5">{{ Auth::user()->activeDietPlan->fats_grams }}g</div>
+                                </div>
+                            </div>
+                            <div class="space-y-1.5 border-t border-white/5 pt-2">
+                                @foreach(Auth::user()->activeDietPlan->meals->take(3) as $meal)
+                                    <div class="p-2 rounded-lg bg-white/5 flex items-center justify-between text-[11px]">
+                                        <span class="font-bold text-white">{{ $meal->meal_name }}</span>
+                                        <span class="text-gray-400 font-mono truncate max-w-[180px]">{{ $meal->food_items }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-xs text-gray-400 italic">Your personal trainer has not assigned a custom diet plan yet.</p>
+                    @endif
+                </div>
+            </div>
+
             <!-- Upcoming Booked Trainer Sessions Table -->
             <div class="glass-card p-8 rounded-2xl border border-white/5 space-y-6">
                 <div class="flex items-center justify-between border-b border-white/10 pb-4">

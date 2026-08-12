@@ -5,42 +5,84 @@ namespace Modules\Workout\Services;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Modules\Subscription\Models\Booking;
 use Modules\Workout\Models\WorkoutRoutine;
 
 class WorkoutService
 {
     /**
-     * Get all members assigned to a trainer via active bookings or subscriptions.
+     * Get members assigned to a trainer via bookings or all members for administration.
      */
     public function getTrainerMembers(int $trainerId): Collection
     {
-        return User::role('member')
-            ->whereHas('bookings', function ($q) use ($trainerId) {
-                $q->where('trainer_id', $trainerId);
+        $user = User::find($trainerId);
+
+        // 1. Master Admin sees all platform members
+        if ($user && $user->hasRole('admin')) {
+            return User::with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
+                ->whereDoesntHave('roles', function($q) {
+                    $q->where('name', 'admin');
+                })
+                ->latest()
+                ->get();
+        }
+
+        // 2. Fetch all User IDs who have booked sessions with this trainer
+        $memberIds = Booking::where('trainer_id', $trainerId)
+            ->pluck('user_id')
+            ->unique();
+
+        if ($memberIds->isNotEmpty()) {
+            return User::whereIn('id', $memberIds)
+                ->with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
+                ->get();
+        }
+
+        // 3. Fallback: If no specific bookings found -> show all members for trainer to assign
+        return User::with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
+            ->whereDoesntHave('roles', function($q) {
+                $q->where('name', 'admin');
             })
-            ->with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
+            ->latest()
             ->get();
     }
 
     /**
-     * Create a new workout routine with exercises for a member.
+     * Create or update a workout routine with exercises for a member.
      */
     public function createRoutine(array $data): WorkoutRoutine
     {
         return DB::transaction(function () use ($data) {
-            // Archive previous active routines for this user
-            WorkoutRoutine::where('user_id', $data['user_id'])
-                ->where('status', 'active')
-                ->update(['status' => 'archived']);
+            $status = $data['status'] ?? 'active';
 
-            $routine = WorkoutRoutine::create([
-                'trainer_id' => $data['trainer_id'],
-                'user_id' => $data['user_id'],
-                'title' => $data['title'],
-                'goal' => $data['goal'] ?? null,
-                'status' => 'active',
-                'notes' => $data['notes'] ?? null,
-            ]);
+            // Check if member already has an existing active routine
+            $routine = WorkoutRoutine::where('user_id', $data['user_id'])
+                ->where('status', 'active')
+                ->first();
+
+            if ($routine) {
+                // In-place update existing routine details
+                $routine->update([
+                    'trainer_id' => $data['trainer_id'],
+                    'title' => $data['title'],
+                    'goal' => $data['goal'] ?? null,
+                    'status' => $status,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+
+                // Clear old exercises to replace with updated ones
+                $routine->exercises()->delete();
+            } else {
+                // Create brand new routine
+                $routine = WorkoutRoutine::create([
+                    'trainer_id' => $data['trainer_id'],
+                    'user_id' => $data['user_id'],
+                    'title' => $data['title'],
+                    'goal' => $data['goal'] ?? null,
+                    'status' => $status,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+            }
 
             if (!empty($data['exercises']) && is_array($data['exercises'])) {
                 foreach ($data['exercises'] as $ex) {

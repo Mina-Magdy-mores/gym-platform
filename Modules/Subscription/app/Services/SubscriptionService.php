@@ -239,6 +239,10 @@ class SubscriptionService
      */
     public function prepareSubscriptionAction(User $user, SubscriptionPlan $newPlan): array
     {
+        if (!$user->is_active) {
+            throw new \Exception('Your account is currently frozen/inactive. Please contact gym administration to activate your account.');
+        }
+
         $activeSub = $user->activeSubscription;
 
         // 1. No active subscription -> Normal immediate purchase

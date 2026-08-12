@@ -20,7 +20,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'phone', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'is_active', 'is_blocked', 'block_reason'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements HasMedia
 {
@@ -37,6 +37,8 @@ class User extends Authenticatable implements HasMedia
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'is_blocked' => 'boolean',
         ];
     }
 
@@ -120,5 +122,41 @@ class User extends Authenticatable implements HasMedia
     public function trainerWallet(): HasOne
     {
         return $this->hasOne(TrainerWallet::class);
+    }
+
+    /**
+     * Relationship: User's workout routines history.
+     */
+    public function workoutRoutines(): HasMany
+    {
+        return $this->hasMany(\Modules\Workout\Models\WorkoutRoutine::class, 'user_id');
+    }
+
+    /**
+     * Relationship: User's currently active workout routine.
+     */
+    public function activeWorkoutRoutine(): HasOne
+    {
+        return $this->hasOne(\Modules\Workout\Models\WorkoutRoutine::class, 'user_id')
+            ->where('status', 'active')
+            ->latestOfMany();
+    }
+
+    /**
+     * Relationship: User's diet plans history.
+     */
+    public function dietPlans(): HasMany
+    {
+        return $this->hasMany(\Modules\Workout\Models\DietPlan::class, 'user_id');
+    }
+
+    /**
+     * Relationship: User's currently active diet plan.
+     */
+    public function activeDietPlan(): HasOne
+    {
+        return $this->hasOne(\Modules\Workout\Models\DietPlan::class, 'user_id')
+            ->where('status', 'active')
+            ->latestOfMany();
     }
 }

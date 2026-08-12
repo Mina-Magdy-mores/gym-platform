@@ -20,15 +20,24 @@ class TrainerDietController extends Controller
     }
 
     /**
-     * Show form to create a diet plan for a member.
+     * Show form to create or edit a diet plan for a member.
      */
     public function create(User $user): View
     {
-        return view('workout::trainer.diet.create', compact('user'));
+        $existingDietPlan = $user->activeDietPlan()->with('meals')->first();
+        $availableDietPlans = \Modules\Workout\Models\DietPlan::with('meals')
+            ->where(function($q) use ($user) {
+                $q->where('trainer_id', Auth::id())
+                  ->orWhere('user_id', $user->id);
+            })
+            ->latest()
+            ->get();
+
+        return view('workout::trainer.diet.create', compact('user', 'existingDietPlan', 'availableDietPlans'));
     }
 
     /**
-     * Store a new diet plan for a member.
+     * Store or update a diet plan for a member.
      */
     public function store(Request $request, User $user): RedirectResponse
     {
@@ -38,6 +47,7 @@ class TrainerDietController extends Controller
             'protein_grams' => 'required|integer|min:0',
             'carbs_grams' => 'required|integer|min:0',
             'fats_grams' => 'required|integer|min:0',
+            'status' => 'nullable|in:active,archived',
             'notes' => 'nullable|string',
             'meals' => 'required|array|min:1',
             'meals.*.meal_name' => 'required|string|max:255',
@@ -48,9 +58,10 @@ class TrainerDietController extends Controller
 
         $validated['trainer_id'] = Auth::id();
         $validated['user_id'] = $user->id;
+        $validated['status'] = $request->input('status', 'active');
 
         $this->dietService->createDietPlan($validated);
 
-        return redirect()->route('trainer.members.index')->with('success', 'Diet nutrition plan assigned to member successfully!');
+        return redirect()->route('trainer.members.index')->with('success', 'Diet plan updated for member successfully!');
     }
 }

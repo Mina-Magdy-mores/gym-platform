@@ -29,6 +29,9 @@
                     @endhasanyrole
 
                     @role('admin')
+                        <a href="{{ route('admin.users.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.users.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-shield-user-line text-sm"></i> Admin Users
+                        </a>
                         <a href="{{ route('admin.plans.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('admin.plans.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
                             <i class="ri-shield-star-line text-sm"></i> Admin Plans
                         </a>
@@ -45,6 +48,12 @@
                             <i class="ri-calendar-event-line text-sm"></i> Admin Bookings
                         </a>
                     @endrole
+
+                    @hasanyrole('trainer|admin')
+                        <a href="{{ route('trainer.members.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider {{ request()->routeIs('trainer.members.*') ? 'bg-neon-gradient text-white shadow-lg bg-neon-glow' : 'text-[#ff5b00] border border-[#ff5b00]/40 hover:bg-[#ff5b00] hover:text-white' }} transition duration-200">
+                            <i class="ri-user-heart-line text-sm"></i> My Athletes
+                        </a>
+                    @endhasanyrole
                 </div>
             </div>
 
@@ -163,6 +172,10 @@
                             @endhasanyrole
 
                             @role('admin')
+                                <x-dropdown-link :href="route('admin.users.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-shield-user-line text-base text-[#ff5b00]"></i>
+                                    <span>Users & Security Moderation</span>
+                                </x-dropdown-link>
                                 <x-dropdown-link :href="route('admin.plans.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
                                     <i class="ri-vip-crown-line text-base text-[#ff5b00]"></i>
                                     <span>Manage Subscription Plans</span>
@@ -180,6 +193,13 @@
                                     <span>Manage Session Bookings</span>
                                 </x-dropdown-link>
                             @endrole
+
+                            @hasanyrole('trainer|admin')
+                                <x-dropdown-link :href="route('trainer.members.index')" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-200 hover:text-white hover:bg-[#ff5b00]/15 transition">
+                                    <i class="ri-user-heart-line text-base text-[#ff5b00]"></i>
+                                    <span>My Athletes Roster</span>
+                                </x-dropdown-link>
+                            @endhasanyrole
                         </div>
 
                         <!-- Authentication -->

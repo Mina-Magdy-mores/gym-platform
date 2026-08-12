@@ -30,21 +30,31 @@ class TrainerWorkoutController extends Controller
     }
 
     /**
-     * Show form to create a workout routine for a member.
+     * Show form to create or edit a workout routine for a member.
      */
     public function create(User $user): View
     {
-        return view('workout::trainer.workout.create', compact('user'));
+        $existingRoutine = $user->activeWorkoutRoutine()->with('exercises')->first();
+        $availableRoutines = \Modules\Workout\Models\WorkoutRoutine::with('exercises')
+            ->where(function($q) use ($user) {
+                $q->where('trainer_id', Auth::id())
+                  ->orWhere('user_id', $user->id);
+            })
+            ->latest()
+            ->get();
+
+        return view('workout::trainer.workout.create', compact('user', 'existingRoutine', 'availableRoutines'));
     }
 
     /**
-     * Store a new workout routine for a member.
+     * Store or update a workout routine for a member.
      */
     public function store(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'goal' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,archived',
             'notes' => 'nullable|string',
             'exercises' => 'required|array|min:1',
             'exercises.*.day_name' => 'required|string|max:255',
@@ -52,15 +62,16 @@ class TrainerWorkoutController extends Controller
             'exercises.*.target_muscle' => 'nullable|string|max:255',
             'exercises.*.sets' => 'required|integer|min:1',
             'exercises.*.reps' => 'required|string|max:50',
-            'exercises.*.rest_seconds' => 'required|integer|min:0',
+            'exercises.*.rest_seconds' => 'nullable|integer|min:0',
             'exercises.*.notes' => 'nullable|string',
         ]);
 
         $validated['trainer_id'] = Auth::id();
         $validated['user_id'] = $user->id;
+        $validated['status'] = $request->input('status', 'active');
 
         $this->workoutService->createRoutine($validated);
 
-        return redirect()->route('trainer.members.index')->with('success', 'Workout routine assigned to member successfully!');
+        return redirect()->route('trainer.members.index')->with('success', 'Workout routine updated for member successfully!');
     }
 }

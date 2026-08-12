@@ -54,6 +54,10 @@ class BookingService
     public function bookTrainerSession(User $user, array $data): Booking
     {
         return DB::transaction(function () use ($user, $data) {
+            if (!$user->is_active) {
+                throw new \Exception('Your account is currently frozen/inactive. Please contact gym administration to activate your account.');
+            }
+
             $trainerId = $data['trainer_id'];
             $bookingDate = $data['booking_date'];
             $startTime = $data['start_time'];

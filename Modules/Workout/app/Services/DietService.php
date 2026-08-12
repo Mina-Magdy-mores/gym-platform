@@ -8,27 +8,47 @@ use Modules\Workout\Models\DietPlan;
 class DietService
 {
     /**
-     * Create a new diet plan with meals for a member.
+     * Create or update a diet plan with meals for a member.
      */
     public function createDietPlan(array $data): DietPlan
     {
         return DB::transaction(function () use ($data) {
-            // Archive previous active diet plans for this user
-            DietPlan::where('user_id', $data['user_id'])
-                ->where('status', 'active')
-                ->update(['status' => 'archived']);
+            $status = $data['status'] ?? 'active';
 
-            $plan = DietPlan::create([
-                'trainer_id' => $data['trainer_id'],
-                'user_id' => $data['user_id'],
-                'title' => $data['title'],
-                'daily_calories' => $data['daily_calories'] ?? 2000,
-                'protein_grams' => $data['protein_grams'] ?? 150,
-                'carbs_grams' => $data['carbs_grams'] ?? 200,
-                'fats_grams' => $data['fats_grams'] ?? 60,
-                'status' => 'active',
-                'notes' => $data['notes'] ?? null,
-            ]);
+            // Check if member already has an existing active diet plan
+            $plan = DietPlan::where('user_id', $data['user_id'])
+                ->where('status', 'active')
+                ->first();
+
+            if ($plan) {
+                // In-place update existing diet plan
+                $plan->update([
+                    'trainer_id' => $data['trainer_id'],
+                    'title' => $data['title'],
+                    'daily_calories' => $data['daily_calories'] ?? 2000,
+                    'protein_grams' => $data['protein_grams'] ?? 150,
+                    'carbs_grams' => $data['carbs_grams'] ?? 200,
+                    'fats_grams' => $data['fats_grams'] ?? 60,
+                    'status' => $status,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+
+                // Clear old meals to replace with updated ones
+                $plan->meals()->delete();
+            } else {
+                // Create brand new diet plan
+                $plan = DietPlan::create([
+                    'trainer_id' => $data['trainer_id'],
+                    'user_id' => $data['user_id'],
+                    'title' => $data['title'],
+                    'daily_calories' => $data['daily_calories'] ?? 2000,
+                    'protein_grams' => $data['protein_grams'] ?? 150,
+                    'carbs_grams' => $data['carbs_grams'] ?? 200,
+                    'fats_grams' => $data['fats_grams'] ?? 60,
+                    'status' => $status,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+            }
 
             if (!empty($data['meals']) && is_array($data['meals'])) {
                 foreach ($data['meals'] as $meal) {
