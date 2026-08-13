@@ -141,5 +141,96 @@
 
         <!-- Global Gym Terms Consent Modal Component -->
         <x-gym-terms-modal />
+
+        <!-- Global Real-Time WebSockets Toast Alert Component -->
+        <div x-data="{
+            toastMessage: null,
+            showToast: false,
+            init() {
+                // Initialize Alpine Store Count on Page Load
+                if (window.Alpine && Alpine.store('unreadChat')) {
+                    Alpine.store('unreadChat').setCount({{ auth()->check() ? (new \Modules\Chat\Services\ChatService())->getTotalUnreadCount(auth()->id()) : 0 }});
+                }
+
+                if (window.Echo && {{ auth()->check() ? 'true' : 'false' }}) {
+                    // 1. Join Community Presence Channel for Live Online/Offline Status
+                    window.Echo.join('gym-community')
+                        .here((users) => {
+                            if (window.Alpine && Alpine.store('presence')) {
+                                Alpine.store('presence').setOnline(users);
+                            }
+                        })
+                        .joining((user) => {
+                            if (window.Alpine && Alpine.store('presence')) {
+                                Alpine.store('presence').add(user);
+                            }
+                        })
+                        .leaving((user) => {
+                            if (window.Alpine && Alpine.store('presence')) {
+                                Alpine.store('presence').remove(user);
+                            }
+                        });
+
+                    // 2. Private User Channel for Chat & Notifications
+                    window.Echo.private('user.{{ auth()->id() }}')
+                        .listen('.message.sent', (data) => {
+                            // Update global Alpine store dynamically
+                            if (window.Alpine && Alpine.store('unreadChat')) {
+                                Alpine.store('unreadChat').increment();
+                            }
+
+                            // Broadcast custom event for live index updates
+                            window.dispatchEvent(new CustomEvent('chat-message-received', { detail: data }));
+
+                            if (!window.location.pathname.includes('/chats/' + data.conversation_id)) {
+                                this.toastMessage = data;
+                                this.showToast = true;
+                                this.playNotificationPing();
+                                setTimeout(() => { this.showToast = false; }, 6000);
+                            }
+                        });
+                }
+            },
+            playNotificationPing() {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                } catch(e) {}
+            }
+        }">
+            <div x-show="showToast" x-transition.opacity.scale.90 class="fixed top-5 right-5 z-[9999] max-w-sm w-full glass-card p-4 rounded-2xl border border-[#ff5b00]/50 bg-[#12141c]/95 shadow-[0_20px_50px_rgba(255,91,0,0.3)] backdrop-blur-xl flex items-start gap-3.5" x-cloak>
+                <div class="w-10 h-10 rounded-xl bg-neon-gradient flex items-center justify-center text-white font-black text-sm uppercase shrink-0 overflow-hidden">
+                    <template x-if="toastMessage && toastMessage.sender_avatar">
+                        <img :src="toastMessage.sender_avatar" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!toastMessage || !toastMessage.sender_avatar">
+                        <span x-text="toastMessage ? toastMessage.sender_name.charAt(0) : 'U'"></span>
+                    </template>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-black text-white uppercase tracking-wider truncate" x-text="toastMessage ? toastMessage.sender_name : ''"></h4>
+                        <span class="text-[9px] font-bold text-[#ff5b00] uppercase">Just Now</span>
+                    </div>
+                    <p class="text-xs text-gray-300 truncate mt-0.5" x-text="toastMessage ? (toastMessage.message || '[Image Attachment]') : ''"></p>
+                    <a :href="toastMessage ? '/chats/' + toastMessage.conversation_id : '#'" class="inline-flex items-center gap-1 text-[10px] font-black text-[#ff5b00] uppercase tracking-wider mt-2 hover:underline">
+                        <span>Reply Live</span>
+                        <i class="ri-arrow-right-line"></i>
+                    </a>
+                </div>
+                <button @click="showToast = false" type="button" class="text-gray-400 hover:text-white text-sm">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+        </div>
     </body>
 </html>

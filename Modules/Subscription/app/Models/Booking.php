@@ -64,6 +64,14 @@ class Booking extends Model
     }
 
     /**
+     * Relationship Alias: Athlete who booked the session.
+     */
+    public function athlete(): BelongsTo
+    {
+        return $this->user();
+    }
+
+    /**
      * Relationship: The trainer being booked for the session.
      */
     public function trainer(): BelongsTo

@@ -24,81 +24,94 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($members as $m)
-                <div class="bg-[#12141c]/90 backdrop-blur-md rounded-2xl border border-white/10 p-6 shadow-2xl space-y-5 hover:border-[#ff5b00]/40 transition duration-200">
-                    <!-- Member Header -->
-                    <div class="flex items-center gap-4 pb-4 border-b border-white/10">
-                        @if($m->getFirstMediaUrl('avatar', 'thumb'))
-                            <img src="{{ $m->getFirstMediaUrl('avatar', 'thumb') }}" alt="Avatar" class="w-14 h-14 rounded-2xl object-cover border-2 border-[#ff5b00] shadow-lg shrink-0">
-                        @else
-                            <div class="w-14 h-14 rounded-2xl bg-neon-gradient flex items-center justify-center font-black text-white text-xl shadow-lg shrink-0">
-                                {{ strtoupper(substr($m->name, 0, 1)) }}
-                            </div>
-                        @endif
-                        <div class="min-w-0 flex-1">
-                            <h3 class="font-black text-white text-base tracking-wide truncate">{{ $m->name }}</h3>
-                            <p class="text-gray-400 text-xs truncate">{{ $m->email }}</p>
-                            <div class="mt-1 inline-flex items-center gap-1 text-[10px] font-mono text-[#ff5b00] font-bold uppercase">
-                                <i class="ri-vip-crown-2-line"></i> {{ $m->activeSubscription->plan->name ?? 'No Plan Active' }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Current Routines & Diet Badges -->
-                    <div class="space-y-2.5 text-xs font-semibold">
-                        <!-- Active Workout Routine Badge -->
-                        <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i class="ri-fitness-fill text-base text-[#ff5b00]"></i>
-                                <div>
-                                    <div class="text-[10px] text-gray-400 uppercase font-black">Active Routine</div>
-                                    <div class="text-white font-bold text-xs truncate max-w-[150px]">
-                                        {{ $m->activeWorkoutRoutine->title ?? 'None Assigned' }}
-                                    </div>
+                @php
+                    $cleanName = preg_replace('/[^\p{L}\p{N}\s]/u', '', $m->name);
+                    $initial = strtoupper(mb_substr($cleanName, 0, 1)) ?: 'A';
+                @endphp
+                <div class="bg-[#12141c]/90 backdrop-blur-md rounded-2xl border border-white/10 p-6 shadow-2xl space-y-5 hover:border-[#ff5b00]/40 transition duration-200 flex flex-col justify-between">
+                    <div class="space-y-5">
+                        <!-- Member Header -->
+                        <div class="flex items-center gap-4 pb-4 border-b border-white/10">
+                            @if($m->hasMedia('avatar'))
+                                <img src="{{ $m->getFirstMediaUrl('avatar', 'thumb') }}" alt="{{ $m->name }}" class="w-14 h-14 rounded-2xl object-cover border-2 border-[#ff5b00] shadow-lg shrink-0">
+                            @else
+                                <div class="w-14 h-14 rounded-2xl bg-neon-gradient flex items-center justify-center font-black text-white text-xl shadow-lg shrink-0">
+                                    {{ $initial }}
+                                </div>
+                            @endif
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-black text-white text-base tracking-wide truncate">{{ $m->name }}</h3>
+                                <p class="text-gray-400 text-xs truncate">{{ $m->email }}</p>
+                                <div class="mt-1 inline-flex items-center gap-1 text-[10px] font-mono text-[#ff5b00] font-bold uppercase">
+                                    <i class="ri-vip-crown-2-line"></i> {{ $m->activeSubscription->plan->name ?? 'No Plan Active' }}
                                 </div>
                             </div>
-                            @if($m->activeWorkoutRoutine)
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-green-500/20 text-green-400 border border-green-500/30">
-                                    {{ $m->activeWorkoutRoutine->exercises->count() }} Exs
-                                </span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-gray-500/20 text-gray-400 border border-gray-500/30">
-                                    Pending
-                                </span>
-                            @endif
                         </div>
 
-                        <!-- Active Diet Plan Badge -->
-                        <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i class="ri-restaurant-fill text-base text-green-400"></i>
-                                <div>
-                                    <div class="text-[10px] text-gray-400 uppercase font-black">Active Diet Plan</div>
-                                    <div class="text-white font-bold text-xs truncate max-w-[150px]">
-                                        {{ $m->activeDietPlan->title ?? 'None Assigned' }}
+                        <!-- Current Routines & Diet Badges -->
+                        <div class="space-y-2.5 text-xs font-semibold">
+                            <!-- Active Workout Routine Badge -->
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <i class="ri-fitness-fill text-base text-[#ff5b00] shrink-0"></i>
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] text-gray-400 uppercase font-black">Active Routine</div>
+                                        <div class="text-white font-bold text-xs truncate max-w-[150px]">
+                                            {{ $m->activeWorkoutRoutine->title ?? 'None Assigned' }}
+                                        </div>
                                     </div>
                                 </div>
+                                @if($m->activeWorkoutRoutine)
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-green-500/20 text-green-400 border border-green-500/30 shrink-0">
+                                        {{ $m->activeWorkoutRoutine->exercises->count() }} Exs
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-gray-500/20 text-gray-400 border border-gray-500/30 shrink-0">
+                                        Pending
+                                    </span>
+                                @endif
                             </div>
-                            @if($m->activeDietPlan)
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-green-500/20 text-green-400 border border-green-500/30">
-                                    {{ $m->activeDietPlan->daily_calories }} Kcal
-                                </span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-gray-500/20 text-gray-400 border border-gray-500/30">
-                                    Pending
-                                </span>
-                            @endif
+
+                            <!-- Active Diet Plan Badge -->
+                            <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <i class="ri-restaurant-fill text-base text-green-400 shrink-0"></i>
+                                    <div class="min-w-0">
+                                        <div class="text-[10px] text-gray-400 uppercase font-black">Active Diet Plan</div>
+                                        <div class="text-white font-bold text-xs truncate max-w-[150px]">
+                                            {{ $m->activeDietPlan->title ?? 'None Assigned' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                @if($m->activeDietPlan)
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-green-500/20 text-green-400 border border-green-500/30 shrink-0">
+                                        {{ $m->activeDietPlan->daily_calories }} Kcal
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-gray-500/20 text-gray-400 border border-gray-500/30 shrink-0">
+                                        Pending
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
-                        <a href="{{ route('trainer.workout.create', $m->id) }}" class="py-2.5 px-3 rounded-xl bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 text-center">
-                            <i class="ri-[#ff5b00] ri-dumbbell-line text-sm"></i> Assign Workout
-                        </a>
-                        <a href="{{ route('trainer.diet.create', $m->id) }}" class="py-2.5 px-3 rounded-xl bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500 hover:text-white transition font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 text-center">
-                            <i class="ri-restaurant-2-line text-sm"></i> Assign Diet Plan
+                    <div class="space-y-2 pt-4 border-t border-white/10 mt-4">
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="{{ route('trainer.workout.create', $m->id) }}" class="py-2.5 px-3 rounded-xl bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 hover:bg-[#ff5b00] hover:text-white transition font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 text-center">
+                                <i class="ri-dumbbell-line text-sm"></i> Assign Workout
+                            </a>
+                            <a href="{{ route('trainer.diet.create', $m->id) }}" class="py-2.5 px-3 rounded-xl bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500 hover:text-white transition font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 text-center">
+                                <i class="ri-restaurant-line text-sm"></i> Assign Diet
+                            </a>
+                        </div>
+
+                        <!-- Direct Live Chat Action Button -->
+                        <a href="{{ route('chat.start', $m->id) }}" class="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition group">
+                            <i class="ri-chat-smile-2-line text-[#ff5b00]"></i> Message Athlete Live
                         </a>
                     </div>
                 </div>

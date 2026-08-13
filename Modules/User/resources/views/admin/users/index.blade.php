@@ -113,6 +113,13 @@
                                 </td>
                                 <td class="py-4 px-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        <!-- Live Chat Support Action -->
+                                        @if(auth()->id() !== $u->id)
+                                            <a href="{{ route('chat.start', $u->id) }}" class="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 hover:border-[#ff5b00] hover:text-[#ff5b00] font-black uppercase text-[10px] transition flex items-center gap-1 cursor-pointer" title="Start Live Support Chat">
+                                                <i class="ri-chat-smile-2-line text-[#ff5b00]"></i> Chat
+                                            </a>
+                                        @endif
+
                                         <!-- Toggle Active Form -->
                                         <form action="{{ route('admin.users.toggle-active', $u->id) }}" method="POST" class="inline">
                                             @csrf

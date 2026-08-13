@@ -11,7 +11,7 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-[1700px] mx-auto sm:px-6 lg:px-8 space-y-8">
             
             <!-- Trainer Wallet Overview Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -218,7 +218,7 @@
                                         #TXN-{{ $txn->id }}
                                     </td>
                                     <td class="py-4 px-4">
-                                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider 
+                                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider whitespace-nowrap 
                                             {{ $txn->type === 'session_credit' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30' }}">
                                             {{ str_replace('_', ' ', $txn->type) }}
                                         </span>
@@ -229,8 +229,13 @@
                                     <td class="py-4 px-4 text-red-400 font-bold">
                                         -{{ number_format($txn->commission_amount, 2) }} EGP
                                     </td>
-                                    <td class="py-4 px-4 text-green-400 font-black text-sm">
-                                        +{{ number_format($txn->net_amount, 2) }} EGP
+                                    <td class="py-4 px-4 font-black text-sm">
+                                        @if($txn->status === 'cancelled')
+                                            <span class="text-red-400 font-mono text-xs line-through block">0.00 EGP</span>
+                                            <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider block">Reversed</span>
+                                        @else
+                                            <span class="text-green-400">+{{ number_format($txn->net_amount, 2) }} EGP</span>
+                                        @endif
                                     </td>
                                     <td class="py-4 px-4 text-gray-400">
                                         {{ $txn->created_at?->format('Y-m-d H:i') }}
@@ -256,13 +261,24 @@
                                                 </a>
                                             @endif
                                         @elseif($txn->type === 'session_credit')
-                                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-bold inline-flex items-center gap-1">
+                                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-bold inline-flex items-center gap-1 whitespace-nowrap">
                                                 <i class="ri-vip-crown-2-line"></i> Covered by Plan
                                             </span>
                                         @endif
-                                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-green-500/20 text-green-400 border border-green-500/30">
-                                            {{ $txn->status }}
-                                        </span>
+
+                                        @if($txn->status === 'completed')
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-green-500/20 text-green-400 border border-green-500/30 whitespace-nowrap">
+                                                Completed
+                                            </span>
+                                        @elseif($txn->status === 'cancelled')
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 whitespace-nowrap">
+                                                Cancelled / Reversed
+                                            </span>
+                                        @else
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                                                {{ ucfirst($txn->status) }}
+                                            </span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

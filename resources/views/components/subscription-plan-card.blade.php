@@ -52,8 +52,14 @@
     </div>
 
     <div class="mt-6 pt-4 border-t border-white/5 relative z-10">
-        <a href="{{ route('checkout.show', $plan->id) }}" class="block w-full text-center py-3 rounded-xl text-xs font-black uppercase tracking-wider transition duration-200 shadow-md cursor-pointer {{ $plan->is_featured ? 'bg-neon-gradient text-white hover:opacity-90 bg-neon-glow' : 'bg-white/10 hover:bg-[#ff5b00] text-white' }}">
-            Subscribe Now
-        </a>
+        @if(auth()->check() && auth()->user()->hasAnyRole(['trainer', 'admin', 'super-admin']))
+            <div class="block w-full text-center py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-gray-400 cursor-not-allowed select-none">
+                <i class="ri-shield-user-line mr-1 text-[#ff5b00]"></i> Trainer / Staff View Mode
+            </div>
+        @else
+            <a href="{{ route('checkout.show', $plan->id) }}" class="block w-full text-center py-3 rounded-xl text-xs font-black uppercase tracking-wider transition duration-200 shadow-md cursor-pointer {{ $plan->is_featured ? 'bg-neon-gradient text-white hover:opacity-90 bg-neon-glow' : 'bg-white/10 hover:bg-[#ff5b00] text-white' }}">
+                Subscribe Now
+            </a>
+        @endif
     </div>
 </div>

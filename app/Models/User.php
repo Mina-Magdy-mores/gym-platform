@@ -125,6 +125,14 @@ class User extends Authenticatable implements HasMedia
     }
 
     /**
+     * Relationship Alias: Wallet for user.
+     */
+    public function wallet(): HasOne
+    {
+        return $this->trainerWallet();
+    }
+
+    /**
      * Relationship: User's workout routines history.
      */
     public function workoutRoutines(): HasMany

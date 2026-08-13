@@ -5,7 +5,11 @@
                 <span class="neon-accent">Private Trainer</span> Bookings
             </h2>
             <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                1-on-1 Personal Training
+                @if(Auth::user()->hasRole('trainer'))
+                    Coach PT Schedule & Reservations
+                @else
+                    1-on-1 Personal Training
+                @endif
             </div>
         </div>
     </x-slot>
@@ -28,99 +32,109 @@
                 </div>
             @endif
 
+            @php
+                $isTrainer = Auth::user()->hasRole('trainer');
+            @endphp
+
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                <!-- Book Session Form (4 Columns - Compact Side Display) -->
-                <div class="lg:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
-                    <div class="space-y-1 pb-4 border-b border-white/10">
-                        <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
-                            <i class="ri-calendar-check-line neon-accent"></i> Book a Session
-                        </h3>
-                        <p class="text-xs text-gray-400">Select your preferred trainer, date, and time slot.</p>
+                
+                @if(!$isTrainer)
+                    <!-- Book Session Form for Members (4 Columns - Compact Side Display) -->
+                    <div class="lg:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
+                        <div class="space-y-1 pb-4 border-b border-white/10">
+                            <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
+                                <i class="ri-calendar-check-line neon-accent"></i> Book a Session
+                            </h3>
+                            <p class="text-xs text-gray-400">Select your preferred trainer, date, and time slot.</p>
+                        </div>
+
+                        <form method="POST" action="{{ route('bookings.store') }}" class="space-y-4">
+                            @csrf
+
+                            <!-- Select Trainer -->
+                            <div class="space-y-1">
+                                <label class="block text-xs font-bold text-gray-300">Select Trainer</label>
+                                <select name="trainer_id" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
+                                    <option value="" class="bg-[#181a20] text-gray-400">-- Choose Captain --</option>
+                                    @foreach($trainers as $tr)
+                                        <option value="{{ $tr->id }}" class="bg-[#181a20] text-white">{{ $tr->name }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error class="mt-1" :messages="$errors->get('trainer_id')" />
+                            </div>
+
+                            <!-- Booking Date -->
+                            <div class="space-y-1">
+                                <label class="block text-xs font-bold text-gray-300">Booking Date</label>
+                                <input type="date" name="booking_date" min="{{ date('Y-m-d') }}" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
+                                <x-input-error class="mt-1" :messages="$errors->get('booking_date')" />
+                            </div>
+
+                            <!-- Start & End Time -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-gray-300">Start Time</label>
+                                    <input type="time" name="start_time" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
+                                    <x-input-error class="mt-1" :messages="$errors->get('start_time')" />
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="block text-xs font-bold text-gray-300">End Time</label>
+                                    <input type="time" name="end_time" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
+                                    <x-input-error class="mt-1" :messages="$errors->get('end_time')" />
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="space-y-1">
+                                <label class="block text-xs font-bold text-gray-300">Special Requests / Notes</label>
+                                <textarea name="notes" rows="2" placeholder="e.g. Focus on chest & triceps workout" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]"></textarea>
+                            </div>
+
+                            <!-- Payment Gateway Selector (If Out-of-pocket Payment Required) -->
+                            <div class="space-y-2 pt-2 border-t border-white/10" x-data="{ selectedGateway: 'paymob' }">
+                                <label class="text-[11px] font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="ri-bank-card-2-line neon-accent"></i> Payment Method (Out-of-Pocket)
+                                </label>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <label class="p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between"
+                                        :class="selectedGateway === 'paymob' ? 'bg-[#ff5b00]/10 border-[#ff5b00] text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" name="gateway" value="paymob" x-model="selectedGateway" class="text-[#ff5b00] focus:ring-[#ff5b00]">
+                                            <span class="font-bold text-xs">Paymob</span>
+                                        </div>
+                                        <i class="ri-bank-card-line text-sm text-[#ff5b00]"></i>
+                                    </label>
+
+                                    <label class="p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between"
+                                        :class="selectedGateway === 'stripe' ? 'bg-blue-500/10 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" name="gateway" value="stripe" x-model="selectedGateway" class="text-blue-500 focus:ring-blue-500">
+                                            <span class="font-bold text-xs">Stripe</span>
+                                        </div>
+                                        <i class="ri-visa-line text-sm text-blue-400"></i>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-3 rounded-full bg-neon-gradient text-white font-bold hover:opacity-90 transition shadow-lg text-sm bg-neon-glow cursor-pointer mt-2">
+                                Confirm Booking
+                            </button>
+                        </form>
                     </div>
+                @endif
 
-                    <form method="POST" action="{{ route('bookings.store') }}" class="space-y-4">
-                        @csrf
-
-                        <!-- Select Trainer -->
-                        <div class="space-y-1">
-                            <label class="block text-xs font-bold text-gray-300">Select Trainer</label>
-                            <select name="trainer_id" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
-                                <option value="" class="bg-[#181a20] text-gray-400">-- Choose Captain --</option>
-                                @foreach($trainers as $tr)
-                                    <option value="{{ $tr->id }}" class="bg-[#181a20] text-white">{{ $tr->name }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error class="mt-1" :messages="$errors->get('trainer_id')" />
-                        </div>
-
-                        <!-- Booking Date -->
-                        <div class="space-y-1">
-                            <label class="block text-xs font-bold text-gray-300">Booking Date</label>
-                            <input type="date" name="booking_date" min="{{ date('Y-m-d') }}" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
-                            <x-input-error class="mt-1" :messages="$errors->get('booking_date')" />
-                        </div>
-
-                        <!-- Start & End Time -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <label class="block text-xs font-bold text-gray-300">Start Time</label>
-                                <input type="time" name="start_time" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
-                                <x-input-error class="mt-1" :messages="$errors->get('start_time')" />
-                            </div>
-
-                            <div class="space-y-1">
-                                <label class="block text-xs font-bold text-gray-300">End Time</label>
-                                <input type="time" name="end_time" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]" required>
-                                <x-input-error class="mt-1" :messages="$errors->get('end_time')" />
-                            </div>
-                        </div>
-
-                        <!-- Notes -->
-                        <div class="space-y-1">
-                            <label class="block text-xs font-bold text-gray-300">Special Requests / Notes</label>
-                            <textarea name="notes" rows="2" placeholder="e.g. Focus on chest & triceps workout" class="w-full bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-[#ff5b00]"></textarea>
-                        </div>
-
-                        <!-- Payment Gateway Selector (If Out-of-pocket Payment Required) -->
-                        <div class="space-y-2 pt-2 border-t border-white/10" x-data="{ selectedGateway: 'paymob' }">
-                            <label class="text-[11px] font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-                                <i class="ri-bank-card-2-line neon-accent"></i> Payment Method (Out-of-Pocket)
-                            </label>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <label class="p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between"
-                                    :class="selectedGateway === 'paymob' ? 'bg-[#ff5b00]/10 border-[#ff5b00] text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
-                                    <div class="flex items-center gap-2">
-                                        <input type="radio" name="gateway" value="paymob" x-model="selectedGateway" class="text-[#ff5b00] focus:ring-[#ff5b00]">
-                                        <span class="font-bold text-xs">Paymob</span>
-                                    </div>
-                                    <i class="ri-bank-card-line text-sm text-[#ff5b00]"></i>
-                                </label>
-
-                                <label class="p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between"
-                                    :class="selectedGateway === 'stripe' ? 'bg-blue-500/10 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'">
-                                    <div class="flex items-center gap-2">
-                                        <input type="radio" name="gateway" value="stripe" x-model="selectedGateway" class="text-blue-500 focus:ring-blue-500">
-                                        <span class="font-bold text-xs">Stripe</span>
-                                    </div>
-                                    <i class="ri-visa-line text-sm text-blue-400"></i>
-                                </label>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full py-3 rounded-full bg-neon-gradient text-white font-bold hover:opacity-90 transition shadow-lg text-sm bg-neon-glow cursor-pointer mt-2">
-                            Confirm Booking
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Bookings List (8 Columns - Full Wide Display) -->
-                <div class="lg:col-span-8 glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
+                <!-- Bookings List Display (12 Cols for Trainer, 8 Cols for Member) -->
+                <div class="{{ $isTrainer ? 'lg:col-span-12' : 'lg:col-span-8' }} glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
                     <div class="flex items-center justify-between pb-4 border-b border-white/10">
                         <div>
                             <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
-                                <i class="ri-user-star-line neon-accent"></i> Your Confirmed Sessions
+                                <i class="ri-user-star-line neon-accent"></i> 
+                                {{ $isTrainer ? 'Your Student Reservations & Appointments' : 'Your Confirmed Sessions' }}
                             </h3>
-                            <p class="text-xs text-gray-400 mt-0.5">Upcoming 1-on-1 personal training reservations</p>
+                            <p class="text-xs text-gray-400 mt-0.5">
+                                {{ $isTrainer ? 'Manage and track 1-on-1 sessions booked by your members' : 'Upcoming 1-on-1 personal training reservations' }}
+                            </p>
                         </div>
                         <span class="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-black">
                             {{ $bookings->count() }} Sessions
@@ -131,17 +145,22 @@
                         <div class="space-y-4">
                             @foreach($bookings as $bk)
                                 @php
-                                    $rawName = $bk->trainer?->name ?? 'Trainer';
-                                    $cleanName = preg_replace('/^(Captain|Coach)\s+/i', '', $rawName);
+                                    $targetUser = $isTrainer ? ($bk->user ?? $bk->athlete) : $bk->trainer;
+                                    $targetUserId = $isTrainer ? $bk->user_id : $bk->trainer_id;
+                                    $cleanTargetName = preg_replace('/[^\p{L}\p{N}\s]/u', '', $targetUser?->name ?? ($isTrainer ? 'Athlete Member' : 'Trainer'));
+                                    $displayName = $isTrainer ? $cleanTargetName : 'Captain ' . preg_replace('/^(Captain|Coach)\s+/i', '', $cleanTargetName);
                                 @endphp
                                 <div class="p-5 rounded-2xl bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-[#ff5b00]/40 transition shadow-xl">
                                     <div class="flex items-center gap-4">
                                         <div class="w-12 h-12 rounded-2xl bg-neon-gradient flex items-center justify-center font-black text-white text-xl shrink-0 shadow-lg">
-                                            <i class="ri-user-star-line"></i>
+                                            <i class="{{ $isTrainer ? 'ri-user-smile-line' : 'ri-user-star-line' }}"></i>
                                         </div>
                                         <div class="space-y-1">
-                                            <div class="font-black text-white text-base tracking-wide">
-                                                Captain {{ $cleanName }}
+                                            <div class="font-black text-white text-base tracking-wide flex items-center gap-2">
+                                                <span>{{ $displayName }}</span>
+                                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                                                    {{ $isTrainer ? 'Athlete / Member' : 'PT Coach' }}
+                                                </span>
                                             </div>
                                             <div class="text-xs text-gray-300 flex flex-wrap items-center gap-4 font-mono">
                                                 <span class="inline-flex items-center gap-1"><i class="ri-calendar-line text-[#ff5b00]"></i> {{ $bk->booking_date }}</span>
@@ -151,6 +170,13 @@
                                     </div>
 
                                     <div class="flex flex-wrap items-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-white/10 justify-end">
+                                        <!-- Direct Live Chat Action Button -->
+                                        @if($targetUserId)
+                                            <a href="{{ route('chat.start', $targetUserId) }}" class="px-3 py-1.5 rounded-xl bg-neon-gradient text-white hover:opacity-90 transition text-xs font-black inline-flex items-center gap-1.5 shadow-md shadow-[#ff5b00]/20">
+                                                <i class="ri-chat-smile-2-line"></i> {{ $isTrainer ? 'Chat Athlete' : 'Chat Coach' }}
+                                            </a>
+                                        @endif
+
                                         @if($bk->payment)
                                             <a href="{{ route('invoices.show', $bk->payment->id) }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition text-xs font-bold inline-flex items-center gap-1.5">
                                                 <i class="ri-eye-line"></i> View
@@ -212,7 +238,9 @@
                         <div class="text-center py-12 text-gray-400 space-y-2">
                             <i class="ri-calendar-event-line text-4xl text-gray-500"></i>
                             <p class="text-sm font-bold">No booked sessions found yet.</p>
-                            <p class="text-xs text-gray-500">Book your first 1-on-1 personal session using the form.</p>
+                            <p class="text-xs text-gray-500">
+                                {{ $isTrainer ? 'When members book 1-on-1 sessions with you, they will appear here.' : 'Book your first 1-on-1 personal session using the form.' }}
+                            </p>
                         </div>
                     @endif
                 </div>

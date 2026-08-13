@@ -96,6 +96,24 @@
                     Trainer Bookings
                 </span>
             </a>
+
+            <!-- Real-Time Chat Link -->
+            <a
+                href="{{ route('chat.index') }}"
+                @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('chat.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+            >
+                <i class="ri-chat-smile-2-line text-lg shrink-0 {{ request()->routeIs('chat.*') ? 'text-white' : 'text-emerald-400' }}"></i>
+                <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate flex-1 flex items-center justify-between">
+                    <span>Real-Time Chat</span>
+                    <span x-show="$store.unreadChat && $store.unreadChat.count > 0" x-text="$store.unreadChat.count" class="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#ff5b00] text-white shadow-md shadow-[#ff5b00]/40 animate-pulse"></span>
+                </span>
+
+                <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                    Real-Time Chat <template x-if="$store.unreadChat && $store.unreadChat.count > 0"><span x-text="'(' + $store.unreadChat.count + ' New)'"></span></template>
+                </span>
+            </a>
         </div>
 
         <!-- 2. PERSONAL TRAINING (Trainers & Admins) -->

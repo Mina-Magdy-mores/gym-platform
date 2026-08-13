@@ -41,7 +41,24 @@ class SubscriptionController extends Controller
         $upcomingBookings = $this->bookingService->getUserBookings($user);
         $memberPayments = $user->payments()->with(['plan', 'booking.trainer'])->latest()->paginate(10);
 
-        return view('dashboard', compact('user', 'activeSub', 'gymRules', 'upcomingBookings', 'memberPayments'));
+        $trainerStats = null;
+        $assignedAthletes = collect();
+
+        if ($user->hasRole('trainer')) {
+            $assignedAthletes = \App\Models\User::whereHas('bookings', function($b) use ($user) {
+                $b->where('trainer_id', $user->id);
+            })->where('id', '!=', $user->id)->get();
+
+            $trainerStats = [
+                'totalAthletes' => $assignedAthletes->count(),
+                'todaySessions' => $user->trainerBookings()->where('booking_date', date('Y-m-d'))->where('status', 'confirmed')->count(),
+                'totalBookings' => $user->trainerBookings()->count(),
+                'walletBalance' => (float) ($user->trainerWallet?->balance ?? 0.00),
+                'unreadMessages' => (new \Modules\Chat\Services\ChatService())->getTotalUnreadCount($user->id),
+            ];
+        }
+
+        return view('dashboard', compact('user', 'activeSub', 'gymRules', 'upcomingBookings', 'memberPayments', 'trainerStats', 'assignedAthletes'));
     }
 
     /**
@@ -71,6 +88,10 @@ class SubscriptionController extends Controller
      */
     public function checkout(Request $request, int $planId): View|RedirectResponse
     {
+        if ($request->user()->hasAnyRole(['trainer', 'admin', 'super-admin'])) {
+            return redirect()->route('plans.index')->with('error', 'Trainer and Staff accounts cannot purchase member subscriptions.');
+        }
+
         try {
             $plan = $this->subscriptionService->getPlanById($planId);
             $prep = $this->subscriptionService->prepareSubscriptionAction($request->user(), $plan);

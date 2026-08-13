@@ -3,5 +3,6 @@
     "Subscription": true,
     "Payment": true,
     "Wallet": true,
-    "Workout": true
+    "Workout": true,
+    "Chat": true
 }
