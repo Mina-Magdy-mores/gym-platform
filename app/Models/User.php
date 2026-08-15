@@ -167,4 +167,20 @@ class User extends Authenticatable implements HasMedia
             ->where('status', 'active')
             ->latestOfMany();
     }
+
+    /**
+     * Relationship: Trainer's created workout routines.
+     */
+    public function createdWorkoutRoutines(): HasMany
+    {
+        return $this->hasMany(\Modules\Workout\Models\WorkoutRoutine::class, 'trainer_id');
+    }
+
+    /**
+     * Relationship: Trainer's created diet plans.
+     */
+    public function createdDietPlans(): HasMany
+    {
+        return $this->hasMany(\Modules\Workout\Models\DietPlan::class, 'trainer_id');
+    }
 }

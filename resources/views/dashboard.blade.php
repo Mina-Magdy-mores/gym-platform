@@ -2,7 +2,9 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-black text-2xl text-white uppercase tracking-wider">
-                @if(Auth::user()->hasRole('trainer'))
+                @if(Auth::user()->hasRole('admin'))
+                    <span class="text-[#ff5b00]">Admin</span> Control Panel
+                @elseif(Auth::user()->hasRole('trainer'))
                     <span class="neon-accent">Coach</span> Dashboard
                 @else
                     <span class="neon-accent">Member</span> Dashboard
@@ -17,7 +19,266 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             
-            @if(Auth::user()->hasRole('trainer'))
+            @if(Auth::user()->hasRole('admin'))
+                <!-- ========================================== -->
+                <!-- MASTER ADMIN COMMAND CENTER VIEW           -->
+                <!-- ========================================== -->
+
+                <!-- Admin Welcome & Executive Control Banner -->
+                <div class="p-8 glass-card rounded-2xl border border-red-500/20 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+                    <div class="space-y-3 text-center md:text-left">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-xs font-black text-red-400 uppercase tracking-wider">
+                            <i class="ri-shield-keyhole-line"></i> Master Admin Authority & Telemetry
+                        </div>
+                        <h3 class="text-3xl font-black uppercase tracking-wide text-white">
+                            Welcome, Master Admin <span class="text-[#ff5b00]">{{ $user->name }}</span>
+                        </h3>
+                        <p class="text-gray-400 text-sm max-w-2xl leading-relaxed">
+                            Live operational command center: monitor platform gross revenue, active memberships, certified coaches, session bookings, and financial settlement approvals.
+                        </p>
+                        <div class="pt-2 flex flex-wrap items-center gap-2.5">
+                            <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#ff5b00] hover:bg-[#ff5b00]/90 text-white font-black text-xs uppercase tracking-wider transition shadow-lg">
+                                <i class="ri-calendar-check-line"></i> Bookings Panel
+                            </a>
+                            <a href="{{ route('admin.payments.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition border border-white/10">
+                                <i class="ri-money-dollar-circle-line text-emerald-400"></i> Master Ledger
+                            </a>
+                            <a href="{{ route('admin.payouts.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition border border-white/10">
+                                <i class="ri-bank-card-line text-indigo-400"></i> Trainer Payouts
+                                @if(($adminStats['pendingPayoutsCount'] ?? 0) > 0)
+                                    <span class="px-1.5 py-0.5 rounded-full bg-[#ff5b00] text-white text-[9px] font-black animate-pulse">
+                                        {{ $adminStats['pendingPayoutsCount'] }}
+                                    </span>
+                                @endif
+                            </a>
+                            <a href="{{ route('trainer.members.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition border border-white/10">
+                                <i class="ri-user-heart-line text-[#ff5b00]"></i> Athletes Roster
+                            </a>
+                            <a href="{{ route('admin.rules.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition border border-white/10">
+                                <i class="ri-file-shield-line text-amber-400"></i> Manage Rules
+                            </a>
+                            <a href="{{ route('admin.users.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition border border-white/10">
+                                <i class="ri-shield-user-line text-red-400"></i> Users & Security
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Admin Avatar Preview Badge -->
+                    <div class="shrink-0 text-center">
+                        <div class="relative w-28 h-28 rounded-2xl overflow-hidden glass-card border border-red-500/30 shadow-2xl flex items-center justify-center mx-auto">
+                            @if($user->getFirstMediaUrl('avatar'))
+                                <img src="{{ $user->getFirstMediaUrl('avatar') }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full bg-gradient-to-br from-red-600 to-[#ff5b00] flex items-center justify-center text-white text-3xl font-black uppercase">
+                                    {{ substr($user->name, 0, 1) }}
+                                </div>
+                            @endif
+                        </div>
+                        <span class="inline-block mt-2 text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                            Root Security Level
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Admin Key Telemetry Stats Grid (5 Cards) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Total Revenue -->
+                    <div class="p-5 rounded-2xl bg-[#12141c]/90 border border-emerald-500/20 space-y-2 hover:border-emerald-500/40 transition">
+                        <div class="flex items-center justify-between text-gray-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Gross Inflows</span>
+                            <i class="ri-money-dollar-circle-line text-lg text-emerald-400"></i>
+                        </div>
+                        <div class="text-xl font-black text-white font-mono">
+                            {{ number_format($adminStats['totalRevenue'] ?? 0, 2) }} <span class="text-xs text-emerald-400 font-sans">EGP</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400">Total settled platform volume</div>
+                    </div>
+
+                    <!-- Active Members -->
+                    <div class="p-5 rounded-2xl bg-[#12141c]/90 border border-white/10 space-y-2 hover:border-[#ff5b00]/40 transition">
+                        <div class="flex items-center justify-between text-gray-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Active Members</span>
+                            <i class="ri-user-smile-line text-lg text-[#ff5b00]"></i>
+                        </div>
+                        <div class="text-xl font-black text-white font-mono">
+                            {{ $adminStats['activeMembers'] ?? 0 }} <span class="text-xs text-gray-400 font-sans">/ {{ $adminStats['totalMembers'] ?? 0 }} Total</span>
+                        </div>
+                        <div class="text-[10px] text-emerald-400 font-bold">Paid subscription holders</div>
+                    </div>
+
+                    <!-- Certified Coaches -->
+                    <div class="p-5 rounded-2xl bg-[#12141c]/90 border border-white/10 space-y-2 hover:border-sky-500/40 transition">
+                        <div class="flex items-center justify-between text-gray-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Trainers Roster</span>
+                            <i class="ri-user-heart-line text-lg text-sky-400"></i>
+                        </div>
+                        <div class="text-xl font-black text-white font-mono">
+                            {{ $adminStats['totalTrainers'] ?? 0 }} <span class="text-xs text-sky-400 font-sans">Coaches</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400">Active certified trainers</div>
+                    </div>
+
+                    <!-- Today's Sessions -->
+                    <div class="p-5 rounded-2xl bg-[#12141c]/90 border border-white/10 space-y-2 hover:border-purple-500/40 transition">
+                        <div class="flex items-center justify-between text-gray-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Today's Sessions</span>
+                            <i class="ri-calendar-check-line text-lg text-purple-400"></i>
+                        </div>
+                        <div class="text-xl font-black text-white font-mono">
+                            {{ $adminStats['todayBookings'] ?? 0 }} <span class="text-xs text-purple-400 font-sans">Booked</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400">{{ date('M d, Y') }}</div>
+                    </div>
+
+                    <!-- Pending Payouts -->
+                    <a href="{{ route('admin.payouts.index') }}" class="p-5 rounded-2xl bg-[#12141c]/90 border border-amber-500/20 space-y-2 hover:border-amber-500/50 transition group block">
+                        <div class="flex items-center justify-between text-gray-400">
+                            <span class="text-xs font-bold uppercase tracking-wider group-hover:text-amber-300">Pending Payouts</span>
+                            <i class="ri-bank-card-line text-lg text-amber-400"></i>
+                        </div>
+                        <div class="text-xl font-black text-white font-mono">
+                            {{ $adminStats['pendingPayoutsCount'] ?? 0 }} <span class="text-xs text-amber-400 font-sans">Requests</span>
+                        </div>
+                        <div class="text-[10px] text-amber-400 font-bold">
+                            {{ number_format($adminStats['pendingPayoutsAmount'] ?? 0, 2) }} EGP Pending
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Admin Dual Master Tables (Recent Bookings & Live Revenue Inflows) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left: Recent Platform PT Bookings (7 cols) -->
+                    <div class="lg:col-span-7 glass-card p-6 rounded-2xl border border-white/10 space-y-4 shadow-xl">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                                <i class="ri-calendar-event-line text-[#ff5b00]"></i> Recent Session Bookings Ledger
+                            </h3>
+                            <a href="{{ route('admin.bookings.index') }}" class="text-[11px] font-bold text-[#ff5b00] hover:text-white transition">
+                                Master Bookings &rarr;
+                            </a>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="text-gray-400 border-b border-white/5 font-black uppercase text-[10px]">
+                                        <th class="pb-2">ID</th>
+                                        <th class="pb-2">Member</th>
+                                        <th class="pb-2">Trainer</th>
+                                        <th class="pb-2">Date & Time</th>
+                                        <th class="pb-2">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5 text-gray-300">
+                                    @forelse($adminRecentBookings as $bk)
+                                        <tr class="hover:bg-white/5 transition">
+                                            <td class="py-3 font-mono font-bold text-white">#{{ $bk->id }}</td>
+                                            <td class="py-3">
+                                                <div class="font-bold text-white">{{ $bk->user->name ?? 'N/A' }}</div>
+                                                <div class="text-[10px] text-gray-400">{{ $bk->user->activeSubscription->plan->name ?? 'No Plan' }}</div>
+                                            </td>
+                                            <td class="py-3">
+                                                <div class="font-bold text-white">{{ $bk->trainer->name ?? 'Unassigned' }}</div>
+                                            </td>
+                                            <td class="py-3 font-mono text-[11px]">
+                                                <div>{{ $bk->booking_date }}</div>
+                                                <div class="text-gray-400 text-[10px]">{{ $bk->start_time }}</div>
+                                            </td>
+                                            <td class="py-3">
+                                                @if($bk->status === 'confirmed')
+                                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-green-500/20 text-green-400 border border-green-500/30">Confirmed</span>
+                                                @elseif($bk->status === 'completed')
+                                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Completed</span>
+                                                @elseif($bk->status === 'cancelled')
+                                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-red-500/20 text-red-400 border border-red-500/30">Cancelled</span>
+                                                @else
+                                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-gray-500/20 text-gray-400">{{ $bk->status }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="py-6 text-center text-gray-400 italic">No bookings recorded yet.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Live Revenue Inflows (5 cols) -->
+                    <div class="lg:col-span-5 glass-card p-6 rounded-2xl border border-white/10 space-y-4 shadow-xl">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                                <i class="ri-money-dollar-circle-line text-emerald-400"></i> Live Revenue Inflows
+                            </h3>
+                            <a href="{{ route('admin.payments.index') }}" class="text-[11px] font-bold text-emerald-400 hover:text-white transition">
+                                Master Ledger &rarr;
+                            </a>
+                        </div>
+
+                        <div class="space-y-3">
+                            @forelse($adminRecentPayments as $pmt)
+                                <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-3 hover:border-white/10 transition">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-bold text-white text-xs truncate">{{ $pmt->user->name ?? 'Member' }}</div>
+                                        <div class="text-[10px] text-gray-400 truncate">{{ $pmt->plan->name ?? ($pmt->payment_method ?? 'Payment') }}</div>
+                                        <div class="text-[9px] font-mono text-gray-500">{{ $pmt->created_at->diffForHumans() }}</div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="font-mono font-black text-sm text-green-400">+{{ number_format($pmt->amount, 2) }} EGP</div>
+                                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-white/5 border border-white/10 text-gray-300">{{ $pmt->payment_method ?? 'Paymob' }}</span>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="py-6 text-center text-gray-400 text-xs italic">No settled transactions yet.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agreed Gym Terms & Regulations Section for Admin -->
+                <div class="glass-card p-8 rounded-2xl border border-white/5 space-y-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                            <h3 class="text-xl font-black text-white uppercase tracking-wide flex items-center gap-2">
+                                <i class="ri-file-shield-line neon-accent"></i> Agreed Gym Terms & Regulations
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Official membership rules agreed upon at subscription checkout</p>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('admin.rules.index') }}" class="px-4 py-1.5 rounded-xl bg-[#ff5b00]/20 hover:bg-[#ff5b00] text-[#ff5b00] hover:text-white border border-[#ff5b00]/40 text-xs font-black uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="ri-settings-4-line"></i> Manage / Edit Rules CRUD
+                            </a>
+                            <span class="px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="ri-shield-check-fill"></i> Agreed & Accepted
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 2-Column Rules Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-300">
+                        @foreach($gymRules as $rule)
+                            <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-3 hover:border-white/10 transition">
+                                <span class="px-2 py-0.5 rounded bg-neon-gradient text-white font-black text-[10px] shrink-0 mt-0.5">
+                                    #{{ $rule->rule_number }}
+                                </span>
+                                <p class="leading-relaxed">{{ $rule->rule_text }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Policy Compliance Warning Note Banner -->
+                    <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between text-xs text-amber-300 mt-4">
+                        <div class="flex items-center gap-3">
+                            <i class="ri-shield-user-line text-xl text-amber-400 shrink-0"></i>
+                            <span><strong>Important Policy Notice:</strong> All facility rules and conduct policies must be strictly followed. Violation of facility terms may lead to administrative review or temporary membership suspension.</span>
+                        </div>
+                    </div>
+                </div>
+
+            @elseif(Auth::user()->hasRole('trainer'))
                 <!-- ========================================== -->
                 <!-- TRAINER / COACH DASHBOARD VIEW             -->
                 <!-- ========================================== -->

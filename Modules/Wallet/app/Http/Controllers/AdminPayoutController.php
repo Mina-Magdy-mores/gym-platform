@@ -19,13 +19,26 @@ class AdminPayoutController extends Controller
     }
 
     /**
-     * Display all trainer payout requests for Admin approval.
+     * Display all trainer wallets, earnings ledger, and payout requests for Admin.
      */
     public function index(): View
     {
         $payoutRequests = $this->walletService->getAllPayoutRequests();
+        $trainerWallets = \Modules\Wallet\Models\TrainerWallet::with('user.media')->get();
+        $recentTransactions = \Modules\Wallet\Models\WalletTransaction::with(['wallet.user', 'booking.user'])
+            ->latest()
+            ->take(15)
+            ->get();
 
-        return view('wallet::admin_payouts', compact('payoutRequests'));
+        $stats = [
+            'totalTrainerBalance' => $trainerWallets->sum('balance'),
+            'totalEarned'         => $trainerWallets->sum('total_earned'),
+            'pendingPayoutsCount' => $payoutRequests->where('status', 'pending')->count(),
+            'pendingPayoutsSum'   => $payoutRequests->where('status', 'pending')->sum('amount'),
+            'settledPayoutsSum'   => $payoutRequests->where('status', 'approved')->sum('amount'),
+        ];
+
+        return view('wallet::admin_payouts', compact('payoutRequests', 'trainerWallets', 'recentTransactions', 'stats'));
     }
 
     /**

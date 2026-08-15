@@ -24,10 +24,14 @@ class BookingController extends Controller
     }
 
     /**
-     * Display trainer bookings page via service layer.
+     * Display trainer bookings page via service layer, or redirect Admin to Master Admin Bookings Panel.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
+        if ($request->user()->hasRole('admin')) {
+            return redirect()->route('admin.bookings.index');
+        }
+
         $trainers = $this->bookingService->getAllTrainers();
         $bookings = $this->bookingService->getUserBookings($request->user());
 

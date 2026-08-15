@@ -111,7 +111,7 @@ class WalletService
         });
 
         // Dispatch real-time notification to all platform Admins
-        $admins = User::role('Admin')->get();
+        $admins = User::role('admin')->get();
         if ($admins->isNotEmpty()) {
             Notification::send($admins, new TrainerPayoutRequestedNotification($payoutRequest));
         }

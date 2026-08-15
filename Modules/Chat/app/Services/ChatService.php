@@ -105,9 +105,29 @@ class ChatService
      */
     public function findOrCreateBetweenUsers(User $currentUser, User $targetUser): Conversation
     {
-        $athleteId = $currentUser->hasRole('trainer') ? $targetUser->id : $currentUser->id;
-        $trainerId = $currentUser->hasRole('trainer') ? $currentUser->id : $targetUser->id;
-        $type = $targetUser->hasRole('admin') ? 'support' : 'pt_session';
+        if ($currentUser->hasRole('trainer')) {
+            // Trainer messaging a member → member is always the athlete
+            $athleteId = $targetUser->id;
+            $trainerId  = $currentUser->id;
+            $type       = 'pt_session';
+
+        } elseif ($currentUser->hasRole('admin')) {
+            // Admin messaging a member → member is the athlete, admin acts as support
+            $athleteId = $targetUser->id;
+            $trainerId  = null;
+            $type       = 'support';
+
+        } else {
+            // Member messaging a trainer or admin
+            $athleteId = $currentUser->id;
+            if ($targetUser->hasRole('admin')) {
+                $trainerId = null;
+                $type      = 'support';
+            } else {
+                $trainerId = $targetUser->id;
+                $type      = 'pt_session';
+            }
+        }
 
         return $this->getOrCreateConversation($athleteId, $trainerId, $type);
     }

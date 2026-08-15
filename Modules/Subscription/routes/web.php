@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Subscription\Http\Controllers\Admin\AdminBookingController;
+use Modules\Subscription\Http\Controllers\Admin\AdminGymRuleController;
 use Modules\Subscription\Http\Controllers\Admin\AdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Admin\AdminSubscriptionPlanController;
 use Modules\Subscription\Http\Controllers\BookingController;
@@ -53,5 +54,12 @@ Route::middleware(['auth'])->group(function () {
         // Master Admin Bookings Control Panel
         Route::get('bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
         Route::post('bookings/{booking}/refund', [AdminBookingController::class, 'processRefund'])->name('admin.bookings.refund');
+
+        // Gym Rules & Regulations Management (CRUD)
+        Route::get('gym-rules', [AdminGymRuleController::class, 'index'])->name('admin.rules.index');
+        Route::post('gym-rules', [AdminGymRuleController::class, 'store'])->name('admin.rules.store');
+        Route::put('gym-rules/{rule}', [AdminGymRuleController::class, 'update'])->name('admin.rules.update');
+        Route::patch('gym-rules/{rule}/toggle', [AdminGymRuleController::class, 'toggle'])->name('admin.rules.toggle');
+        Route::delete('gym-rules/{rule}', [AdminGymRuleController::class, 'destroy'])->name('admin.rules.destroy');
     });
 });

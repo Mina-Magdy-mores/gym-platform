@@ -61,43 +61,89 @@
                 <i class="ri-dashboard-3-line text-lg shrink-0 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-[#ff5b00]' }}"></i>
                 <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Dashboard</span>
 
-                <!-- Tooltip for Collapsed State -->
                 <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
                     Dashboard
                 </span>
             </a>
 
-            <!-- Plans & Schedules -->
-            <a
-                href="{{ route('plans.index') }}"
-                @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
-                :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
-                class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('plans.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
-            >
-                <i class="ri-price-tag-3-line text-lg shrink-0 {{ request()->routeIs('plans.*') ? 'text-white' : 'text-orange-400' }}"></i>
-                <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Plans & Schedules</span>
+            <!-- Subscriptions / Plans (Members only) -->
+            @role('member')
+                <a
+                    href="{{ route('subscription.plans') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('subscription.plans*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-price-tag-3-line text-lg shrink-0 {{ request()->routeIs('subscription.plans*') ? 'text-white' : 'text-amber-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Plans & Pricing</span>
 
-                <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                    Plans & Schedules
-                </span>
-            </a>
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Plans & Pricing
+                    </span>
+                </a>
 
-            <!-- Trainer Bookings -->
-            <a
-                href="{{ route('bookings.index') }}"
-                @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
-                :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
-                class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('bookings.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
-            >
-                <i class="ri-calendar-check-line text-lg shrink-0 {{ request()->routeIs('bookings.*') ? 'text-white' : 'text-amber-400' }}"></i>
-                <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Trainer Bookings</span>
+                <!-- Class Schedules -->
+                <a
+                    href="{{ route('schedules.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('schedules.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-calendar-event-line text-lg shrink-0 {{ request()->routeIs('schedules.*') ? 'text-white' : 'text-sky-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Gym Classes</span>
 
-                <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                    Trainer Bookings
-                </span>
-            </a>
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Gym Classes
+                    </span>
+                </a>
 
-            <!-- Real-Time Chat Link -->
+                <!-- Private Trainer Bookings -->
+                <a
+                    href="{{ route('bookings.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('bookings.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-user-star-line text-lg shrink-0 {{ request()->routeIs('bookings.*') ? 'text-white' : 'text-purple-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Private Coaches</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Private Coaches
+                    </span>
+                </a>
+
+                <!-- Workout Routine -->
+                <a
+                    href="{{ route('workout.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('workout.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-heart-pulse-line text-lg shrink-0 {{ request()->routeIs('workout.*') ? 'text-white' : 'text-pink-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Workout Routine</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Workout Routine
+                    </span>
+                </a>
+
+                <!-- Nutrition Diet Plan -->
+                <a
+                    href="{{ route('diet.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('diet.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-restaurant-2-line text-lg shrink-0 {{ request()->routeIs('diet.*') ? 'text-white' : 'text-emerald-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Nutrition & Diet</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Nutrition & Diet
+                    </span>
+                </a>
+            @endrole
+
+            <!-- Live Chat -->
             <a
                 href="{{ route('chat.index') }}"
                 @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
@@ -106,18 +152,18 @@
             >
                 <i class="ri-chat-smile-2-line text-lg shrink-0 {{ request()->routeIs('chat.*') ? 'text-white' : 'text-emerald-400' }}"></i>
                 <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate flex-1 flex items-center justify-between">
-                    <span>Real-Time Chat</span>
+                    <span>Live Chat</span>
                     <span x-show="$store.unreadChat && $store.unreadChat.count > 0" x-text="$store.unreadChat.count" class="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#ff5b00] text-white shadow-md shadow-[#ff5b00]/40 animate-pulse"></span>
                 </span>
 
                 <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                    Real-Time Chat <template x-if="$store.unreadChat && $store.unreadChat.count > 0"><span x-text="'(' + $store.unreadChat.count + ' New)'"></span></template>
+                    Live Chat
                 </span>
             </a>
         </div>
 
-        <!-- 2. PERSONAL TRAINING (Trainers & Admins) -->
-        @hasanyrole('trainer|admin')
+        <!-- 2. ATHLETES & TRAINING (Trainer Only) -->
+        @role('trainer')
             <div class="space-y-1 pt-3 border-t border-white/5">
                 <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="px-3 text-[10px] font-black uppercase tracking-widest text-[#ff5b00] block mb-2">
                     Athletes & Training
@@ -153,7 +199,7 @@
                     </span>
                 </a>
             </div>
-        @endhasanyrole
+        @endrole
 
         <!-- 3. MASTER ADMINISTRATION (Admin Only) -->
         @role('admin')
@@ -177,6 +223,51 @@
                     </span>
                 </a>
 
+                <!-- Trainers & Recruitment -->
+                <a
+                    href="{{ route('admin.trainers.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('admin.trainers.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-user-star-line text-lg shrink-0 {{ request()->routeIs('admin.trainers.*') ? 'text-white' : 'text-[#ff5b00]' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Trainers & Recruitment</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Trainers & Recruitment
+                    </span>
+                </a>
+
+                <!-- Coaches Workouts & Diets Oversight -->
+                <a
+                    href="{{ route('trainer.members.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('trainer.members.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-user-heart-line text-lg shrink-0 {{ request()->routeIs('trainer.members.*') ? 'text-white' : 'text-pink-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Coaches Plans Oversight</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Coaches Plans Oversight
+                    </span>
+                </a>
+
+                <!-- Gym Rules Management -->
+                <a
+                    href="{{ route('admin.rules.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('admin.rules.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-file-shield-line text-lg shrink-0 {{ request()->routeIs('admin.rules.*') ? 'text-white' : 'text-amber-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Gym Rules</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Gym Rules
+                    </span>
+                </a>
+
                 <!-- Admin Plans -->
                 <a
                     href="{{ route('admin.plans.index') }}"
@@ -184,7 +275,7 @@
                     :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
                     class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('admin.plans.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
                 >
-                    <i class="ri-shield-star-line text-lg shrink-0 {{ request()->routeIs('admin.plans.*') ? 'text-white' : 'text-amber-400' }}"></i>
+                    <i class="ri-shield-star-line text-lg shrink-0 {{ request()->routeIs('admin.plans.*') ? 'text-white' : 'text-yellow-400' }}"></i>
                     <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Admin Plans</span>
 
                     <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
@@ -207,6 +298,21 @@
                     </span>
                 </a>
 
+                <!-- Admin Bookings -->
+                <a
+                    href="{{ route('admin.bookings.index') }}"
+                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
+                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('admin.bookings.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                >
+                    <i class="ri-calendar-check-line text-lg shrink-0 {{ request()->routeIs('admin.bookings.*') ? 'text-white' : 'text-purple-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Admin Bookings</span>
+
+                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
+                        Admin Bookings
+                    </span>
+                </a>
+
                 <!-- Master Ledger -->
                 <a
                     href="{{ route('admin.payments.index') }}"
@@ -222,7 +328,7 @@
                     </span>
                 </a>
 
-                <!-- Admin Payouts -->
+                <!-- Trainers Treasury & Payouts -->
                 <a
                     href="{{ route('admin.payouts.index') }}"
                     @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
@@ -230,25 +336,10 @@
                     class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('admin.payouts.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
                 >
                     <i class="ri-bank-card-line text-lg shrink-0 {{ request()->routeIs('admin.payouts.*') ? 'text-white' : 'text-indigo-400' }}"></i>
-                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Admin Payouts</span>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Trainers Treasury & Wallets</span>
 
                     <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                        Admin Payouts
-                    </span>
-                </a>
-
-                <!-- Admin Bookings -->
-                <a
-                    href="{{ route('admin.bookings.index') }}"
-                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
-                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
-                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('admin.bookings.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
-                >
-                    <i class="ri-calendar-event-line text-lg shrink-0 {{ request()->routeIs('admin.bookings.*') ? 'text-white' : 'text-purple-400' }}"></i>
-                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Admin Bookings</span>
-
-                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                        Admin Bookings
+                        Trainers Treasury & Wallets
                     </span>
                 </a>
             </div>

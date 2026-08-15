@@ -42,12 +42,57 @@ class SubscriptionController extends Controller
         $memberPayments = $user->payments()->with(['plan', 'booking.trainer'])->latest()->paginate(10);
 
         $trainerStats = null;
+        $adminStats = null;
+        $adminRecentBookings = collect();
+        $adminRecentPayments = collect();
         $assignedAthletes = collect();
 
-        if ($user->hasRole('trainer')) {
-            $assignedAthletes = \App\Models\User::whereHas('bookings', function($b) use ($user) {
-                $b->where('trainer_id', $user->id);
-            })->where('id', '!=', $user->id)->get();
+        if ($user->hasRole('admin')) {
+            $totalRevenue = (float) \Modules\Payment\Models\Payment::whereIn('status', ['completed', 'successful', 'paid'])
+                ->where('amount', '>', 0)
+                ->sum('amount');
+            $activeMembersCount = \Modules\Subscription\Models\UserSubscription::where('status', 'active')
+                ->where('ends_at', '>=', now())
+                ->distinct('user_id')
+                ->count('user_id');
+            $totalMembersCount = \App\Models\User::role('member')->count();
+            if ($totalMembersCount === 0) {
+                $totalMembersCount = \App\Models\User::whereDoesntHave('roles', fn($q) => $q->whereIn('name', ['admin', 'trainer']))->count();
+            }
+            $totalTrainersCount = \App\Models\User::role('trainer')->count();
+            $todayBookingsCount = \Modules\Subscription\Models\Booking::where('booking_date', date('Y-m-d'))->count();
+            $pendingPayoutsCount = \Modules\Wallet\Models\PayoutRequest::where('status', 'pending')->count();
+            $pendingPayoutsAmount = (float) \Modules\Wallet\Models\PayoutRequest::where('status', 'pending')->sum('amount');
+
+            $adminStats = [
+                'totalRevenue' => $totalRevenue,
+                'activeMembers' => $activeMembersCount,
+                'totalMembers' => max($totalMembersCount, $activeMembersCount),
+                'totalTrainers' => $totalTrainersCount,
+                'todayBookings' => $todayBookingsCount,
+                'pendingPayoutsCount' => $pendingPayoutsCount,
+                'pendingPayoutsAmount' => $pendingPayoutsAmount,
+                'unreadMessages' => (new \Modules\Chat\Services\ChatService())->getTotalUnreadCount($user->id),
+            ];
+
+            $adminRecentBookings = \Modules\Subscription\Models\Booking::with(['user.activeSubscription.plan', 'trainer'])
+                ->latest()
+                ->take(6)
+                ->get();
+
+            $adminRecentPayments = \Modules\Payment\Models\Payment::with(['user', 'plan'])
+                ->whereIn('status', ['completed', 'successful', 'paid'])
+                ->where('amount', '>', 0)
+                ->latest()
+                ->take(6)
+                ->get();
+        } elseif ($user->hasRole('trainer')) {
+            $assignedAthletes = \App\Models\User::role('member')
+                ->whereHas('bookings', function($b) use ($user) {
+                    $b->where('trainer_id', $user->id);
+                })
+                ->where('id', '!=', $user->id)
+                ->get();
 
             $trainerStats = [
                 'totalAthletes' => $assignedAthletes->count(),
@@ -58,7 +103,18 @@ class SubscriptionController extends Controller
             ];
         }
 
-        return view('dashboard', compact('user', 'activeSub', 'gymRules', 'upcomingBookings', 'memberPayments', 'trainerStats', 'assignedAthletes'));
+        return view('dashboard', compact(
+            'user',
+            'activeSub',
+            'gymRules',
+            'upcomingBookings',
+            'memberPayments',
+            'trainerStats',
+            'adminStats',
+            'adminRecentBookings',
+            'adminRecentPayments',
+            'assignedAthletes'
+        ));
     }
 
     /**

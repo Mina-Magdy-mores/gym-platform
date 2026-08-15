@@ -57,15 +57,18 @@ class AdminPaymentController extends Controller
 
         $payments = $query->paginate(25)->withQueryString();
 
-        // Single Ultra-Fast SQL Aggregation Query for Master Ledger Stats
+        // Ultra-Fast SQL Aggregation Query for Master Ledger Stats
         $statsRaw = Payment::selectRaw("
             COUNT(*) as total_count,
-            COALESCE(SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END), 0) as total_gross,
-            COALESCE(SUM(CASE WHEN status = 'completed' AND subscription_plan_id IS NOT NULL THEN amount ELSE 0 END), 0) as total_subscriptions,
-            COALESCE(SUM(CASE WHEN status = 'completed' AND booking_id IS NOT NULL THEN amount ELSE 0 END), 0) as total_pt
+            COALESCE(SUM(CASE WHEN status IN ('completed', 'successful', 'paid') AND amount > 0 THEN amount ELSE 0 END), 0) as total_gross,
+            COALESCE(SUM(CASE WHEN status IN ('completed', 'successful', 'paid') AND subscription_plan_id IS NOT NULL AND amount > 0 THEN amount ELSE 0 END), 0) as total_subscriptions,
+            COALESCE(SUM(CASE WHEN status IN ('completed', 'successful', 'paid') AND booking_id IS NOT NULL AND amount > 0 THEN amount ELSE 0 END), 0) as total_pt
         ")->first();
 
         $totalPtSessionsRevenue = (float) ($statsRaw->total_pt ?? 0);
+        if ($totalPtSessionsRevenue <= 0) {
+            $totalPtSessionsRevenue = (float) \Modules\Subscription\Models\Booking::sum('price');
+        }
 
         $stats = [
             'total_gross_revenue' => (float) ($statsRaw->total_gross ?? 0),

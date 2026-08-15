@@ -24,10 +24,14 @@ class WalletController extends Controller
     }
 
     /**
-     * Display trainer wallet ledger dashboard view.
+     * Display trainer wallet ledger dashboard view, or redirect Admin to Admin Payouts Panel.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
+        if ($request->user()->hasRole('admin')) {
+            return redirect()->route('admin.payouts.index');
+        }
+
         $data = $this->walletService->getTrainerWalletData($request->user()->id);
 
         $wallet = $data['wallet'];

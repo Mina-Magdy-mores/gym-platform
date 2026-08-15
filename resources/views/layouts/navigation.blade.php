@@ -1,3 +1,8 @@
+@auth
+<meta name="auth-user-id" content="{{ Auth::id() }}">
+<meta name="unread-chat-count" content="{{ app(\Modules\Chat\Services\ChatService::class)->getTotalUnreadCount(Auth::id()) }}">
+<meta name="unread-notification-count" content="{{ Auth::user()->unreadNotifications->count() }}">
+@endauth
 <nav class="glass-card border-b border-white/5 relative z-40 sticky top-0 backdrop-blur-xl bg-[#0b0d14]/80">
     <!-- Streamlined Header Navigation Bar -->
     <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,56 +37,116 @@
                 </div>
             </div>
 
-            <!-- Right Controls: Notifications & User Profile Dropdown -->
+            <!-- Right Controls: Chat Bell, Notifications & User Profile Dropdown -->
             <div class="flex items-center gap-3">
+
+                <!-- ─── Live Chat Unread Bell ─── -->
+                @auth
+                <a
+                    href="{{ route('chat.index') }}"
+                    class="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[#ff5b00] transition cursor-pointer border border-white/5 flex items-center justify-center"
+                    title="Messages"
+                    x-data
+                >
+                    <i class="ri-chat-smile-2-line text-xl"></i>
+
+                    {{-- Live unread badge - driven by Alpine Store --}}
+                    <span
+                        x-show="$store.unreadChat && $store.unreadChat.count > 0"
+                        x-text="$store.unreadChat.count > 99 ? '99+' : $store.unreadChat.count"
+                        x-transition
+                        class="absolute -top-1 -right-1 min-w-[1.1rem] h-[1.1rem] px-1
+                               bg-[#ff5b00] text-white text-[9px] font-black rounded-full
+                               flex items-center justify-center
+                               animate-pulse shadow-[0_0_10px_rgba(255,91,0,0.6)]"
+                    ></span>
+                </a>
+                @endauth
+
                 <!-- Notifications Dropdown -->
                 <div class="flex items-center">
                     <x-dropdown align="right" width="w-80" content-classes="py-0 bg-[#12141c] border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden">
                         <x-slot name="trigger">
-                            <button class="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[#ff5b00] transition cursor-pointer border border-white/5">
+                            <button class="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[#ff5b00] transition cursor-pointer border border-white/5" x-data>
                                 <i class="ri-notification-3-line text-xl"></i>
-                                @if(Auth::user()->unreadNotifications->count() > 0)
-                                    <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-[#ff5b00] text-white text-[10px] font-black rounded-full flex items-center justify-center animate-pulse shadow-[0_0_10px_rgba(255,91,0,0.6)]">
-                                        {{ Auth::user()->unreadNotifications->count() }}
-                                    </span>
-                                @endif
+
+                                {{-- Live unread badge - driven by Alpine Store --}}
+                                <span
+                                    x-show="$store.unreadNotifications && $store.unreadNotifications.count > 0"
+                                    x-text="$store.unreadNotifications.count > 99 ? '99+' : $store.unreadNotifications.count"
+                                    x-transition
+                                    class="absolute top-1.5 right-1.5 min-w-[1rem] h-4 px-1
+                                           bg-[#ff5b00] text-white text-[10px] font-black rounded-full
+                                           flex items-center justify-center
+                                           animate-pulse shadow-[0_0_10px_rgba(255,91,0,0.6)]"
+                                ></span>
                             </button>
                         </x-slot>
 
                         <x-slot name="content">
-                            <div class="px-4 py-3 border-b border-white/10 flex justify-between items-center bg-[#1a1d28]/80">
-                                <span class="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
-                                    <i class="ri-notification-3-line text-[#ff5b00]"></i> Notifications
-                                </span>
-                                @if(Auth::user()->unreadNotifications->count() > 0)
-                                    <form action="{{ route('notifications.mark-all-read') }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="text-[10px] text-[#ff5b00] hover:text-white transition font-bold cursor-pointer uppercase tracking-wider">Mark all read</button>
-                                    </form>
-                                @endif
-                            </div>
+                            <div x-data="{ liveNotifs: [] }" @notification-received.window="liveNotifs.unshift($event.detail)">
+                                <div class="px-4 py-3 border-b border-white/10 flex justify-between items-center bg-[#1a1d28]/80">
+                                    <span class="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
+                                        <i class="ri-notification-3-line text-[#ff5b00]"></i> Notifications
+                                    </span>
+                                    <template x-if="$store.unreadNotifications && $store.unreadNotifications.count > 0">
+                                        <form action="{{ route('notifications.mark-all-read') }}" method="POST"
+                                              @submit="$store.unreadNotifications.markAllRead()">
+                                            @csrf
+                                            <button type="submit" class="text-[10px] text-[#ff5b00] hover:text-white transition font-bold cursor-pointer uppercase tracking-wider">Mark all read</button>
+                                        </form>
+                                    </template>
+                                </div>
 
-                            <div class="max-h-72 overflow-y-auto divide-y divide-white/5 bg-[#12141c]">
-                                @forelse(Auth::user()->notifications()->latest()->take(6)->get() as $notification)
-                                    <div class="p-3.5 hover:bg-white/5 transition duration-150 flex items-start justify-between gap-3 overflow-hidden {{ $notification->read_at ? 'bg-[#12141c] text-gray-300' : 'bg-white/[0.04] text-white' }}">
-                                        <div class="flex-1 min-w-0 space-y-1">
-                                            <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap break-words">
-                                                @if(!$notification->read_at)
-                                                    <span class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0"></span>
-                                                @endif
-                                                <span class="break-words">{{ $notification->data['title'] ?? 'Notification' }}</span>
-                                            </div>
-                                            <div class="text-[11px] text-gray-300 leading-snug break-words font-medium">{{ $notification->data['message'] ?? '' }}</div>
-                                            <div class="text-[9px] text-gray-400 font-mono flex items-center gap-1 pt-0.5">
-                                                <i class="ri-time-line text-[10px]"></i> {{ $notification->created_at->diffForHumans() }}
+                                <div class="max-h-72 overflow-y-auto divide-y divide-white/5 bg-[#12141c]">
+                                    {{-- Live incoming notifications via WebSockets --}}
+                                    <template x-for="(notif, idx) in liveNotifs" :key="'live-' + idx">
+                                        <div class="p-3.5 bg-white/[0.06] text-white hover:bg-white/10 transition duration-150 flex items-start justify-between gap-3 overflow-hidden border-l-2 border-[#ff5b00]">
+                                            <div class="flex-1 min-w-0 space-y-1">
+                                                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap break-words">
+                                                    <span class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0 animate-ping"></span>
+                                                    <span class="break-words" x-text="notif.title || 'New Notification'"></span>
+                                                </div>
+                                                <div class="text-[11px] text-gray-200 leading-snug break-words font-medium" x-text="notif.message"></div>
+                                                <div class="text-[9px] text-orange-400 font-mono flex items-center gap-1 pt-0.5">
+                                                    <i class="ri-time-line text-[10px]"></i> Just Now
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @empty
-                                    <div class="p-6 text-center text-xs text-gray-400 font-bold uppercase tracking-wider">
-                                        No new notifications
-                                    </div>
-                                @endforelse
+                                    </template>
+
+                                    {{-- Database stored notifications --}}
+                                    @forelse(Auth::user()->notifications()->latest()->take(6)->get() as $notification)
+                                        <div class="p-3.5 hover:bg-white/5 transition duration-150 flex items-start justify-between gap-3 overflow-hidden {{ $notification->read_at ? 'bg-[#12141c] text-gray-300' : 'bg-white/[0.04] text-white' }}">
+                                            <div class="flex-1 min-w-0 space-y-1">
+                                                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap break-words">
+                                                    @if(!$notification->read_at)
+                                                        <span class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0"></span>
+                                                    @endif
+                                                    <span class="break-words">{{ $notification->data['title'] ?? 'Notification' }}</span>
+                                                </div>
+                                                <div class="text-[11px] text-gray-300 leading-snug break-words font-medium">{{ $notification->data['message'] ?? '' }}</div>
+                                                <div class="text-[9px] text-gray-400 font-mono flex items-center gap-1 pt-0.5">
+                                                    <i class="ri-time-line text-[10px]"></i> {{ $notification->created_at->diffForHumans() }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <template x-if="liveNotifs.length === 0">
+                                            <div class="p-6 text-center text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                                No new notifications
+                                            </div>
+                                        </template>
+                                    @endforelse
+                                </div>
+
+                                <!-- View All Notifications Footer Link -->
+                                <div class="p-2.5 border-t border-white/10 bg-[#1a1d28]/90 text-center">
+                                    <a href="{{ route('notifications.index') }}" class="text-[11px] font-black text-gray-300 hover:text-[#ff5b00] transition flex items-center justify-center gap-1.5 uppercase tracking-wider py-1">
+                                        <span>View All Notifications</span>
+                                        <i class="ri-arrow-right-line text-xs text-[#ff5b00]"></i>
+                                    </a>
+                                </div>
                             </div>
                         </x-slot>
                     </x-dropdown>

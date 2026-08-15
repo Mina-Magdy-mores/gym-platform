@@ -5,12 +5,12 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h2 class="text-xl font-black text-white uppercase tracking-wide flex items-center gap-2">
-                    <i class="ri-shield-user-line text-[#ff5b00]"></i> Master Admin Bookings Control Panel
+                    <i class="ri-calendar-check-line text-[#ff5b00]"></i> Master Admin Bookings Control Panel
                 </h2>
                 <p class="text-xs text-gray-400 mt-1">Full platform ledger of member session bookings, trainer assignments, and payment statuses</p>
             </div>
-            <div class="px-3 py-1.5 bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 rounded-xl text-xs font-black uppercase">
-                Total Bookings: {{ $bookings->count() }}
+            <div class="px-3.5 py-1.5 bg-[#ff5b00]/10 text-[#ff5b00] border border-[#ff5b00]/30 rounded-xl text-xs font-black uppercase">
+                Total Bookings: {{ $stats['total'] ?? $bookings->total() }}
             </div>
         </div>
     </x-slot>
@@ -31,6 +31,67 @@
             </div>
         @endif
 
+        <!-- Quick Telemetry KPI Stats Grid (4 Cards) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-4 rounded-2xl bg-[#12141c]/90 border border-white/10 space-y-1">
+                <div class="text-[10px] text-gray-400 uppercase font-black tracking-wider">Total Bookings</div>
+                <div class="text-2xl font-black text-white font-mono">{{ $stats['total'] ?? 0 }}</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#12141c]/90 border border-green-500/20 space-y-1">
+                <div class="text-[10px] text-green-400 uppercase font-black tracking-wider">Confirmed & Upcoming</div>
+                <div class="text-2xl font-black text-green-400 font-mono">{{ $stats['confirmed'] ?? 0 }}</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#12141c]/90 border border-blue-500/20 space-y-1">
+                <div class="text-[10px] text-blue-400 uppercase font-black tracking-wider">Completed Sessions</div>
+                <div class="text-2xl font-black text-blue-400 font-mono">{{ $stats['completed'] ?? 0 }}</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#12141c]/90 border border-red-500/20 space-y-1">
+                <div class="text-[10px] text-red-400 uppercase font-black tracking-wider">Cancelled Sessions</div>
+                <div class="text-2xl font-black text-red-400 font-mono">{{ $stats['cancelled'] ?? 0 }}</div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="bg-[#12141c]/90 backdrop-blur-md rounded-2xl border border-white/10 p-5 shadow-2xl">
+            <form method="GET" action="{{ route('admin.bookings.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div class="md:col-span-5 relative w-full">
+                    <i class="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Search by ID, member name, or trainer..."
+                        class="w-full bg-[#1a1d28] border border-white/10 rounded-xl text-white text-xs pl-10 pr-4 py-2.5 focus:border-[#ff5b00] focus:ring-1 focus:ring-[#ff5b00]"
+                    >
+                </div>
+
+                <div class="md:col-span-3 w-full">
+                    <select name="trainer_id" onchange="this.form.submit()" class="w-full bg-[#1a1d28] border border-white/10 rounded-xl text-white text-xs px-3 py-2.5 focus:border-[#ff5b00]">
+                        <option value="">-- All Coaches --</option>
+                        @foreach($trainers as $t)
+                            <option value="{{ $t->id }}" {{ request('trainer_id') == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 w-full">
+                    <select name="status" onchange="this.form.submit()" class="w-full bg-[#1a1d28] border border-white/10 rounded-xl text-white text-xs px-3 py-2.5 focus:border-[#ff5b00]">
+                        <option value="">-- All Statuses --</option>
+                        <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                        <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 w-full">
+                    <button type="submit" class="w-full py-2.5 bg-[#ff5b00] hover:bg-[#ff5b00]/90 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition cursor-pointer">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bookings Master Table -->
         <div class="bg-[#12141c]/90 backdrop-blur-md rounded-2xl border border-white/10 p-6 shadow-2xl space-y-6">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
@@ -38,11 +99,11 @@
                         <tr class="border-b border-white/10 text-gray-400 uppercase font-black tracking-wider">
                             <th class="py-3 px-4">Booking ID</th>
                             <th class="py-3 px-4">Member Info</th>
-                            <th class="py-3 px-4">Trainer</th>
-                            <th class="py-3 px-4">Date & Time</th>
-                            <th class="py-3 px-4">Amount</th>
+                            <th class="py-3 px-4">Assigned Coach</th>
+                            <th class="py-3 px-4">Session Date & Time</th>
+                            <th class="py-3 px-4">Fee / Billing</th>
                             <th class="py-3 px-4">Status</th>
-                            <th class="py-3 px-4">Refund Status</th>
+                            <th class="py-3 px-4">Refund Resolution</th>
                             <th class="py-3 px-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -51,10 +112,21 @@
                             <tr class="hover:bg-white/5 transition">
                                 <td class="py-4 px-4 font-mono font-bold text-white">#{{ $booking->id }}</td>
                                 <td class="py-4 px-4">
-                                    <div class="font-bold text-white text-sm">{{ $booking->user->name ?? 'N/A' }}</div>
-                                    <div class="text-gray-400 text-[11px]">{{ $booking->user->email ?? '' }}</div>
-                                    <div class="text-[10px] text-[#ff5b00] font-mono mt-0.5 uppercase">
-                                        Plan: {{ $booking->user->activeSubscription->plan->name ?? 'No Active Plan' }}
+                                    <div class="flex items-center gap-3">
+                                        @if($booking->user?->getFirstMediaUrl('avatar', 'thumb'))
+                                            <img src="{{ $booking->user->getFirstMediaUrl('avatar', 'thumb') }}" alt="Avatar" class="w-8 h-8 rounded-lg object-cover border border-[#ff5b00] shrink-0">
+                                        @else
+                                            <div class="w-8 h-8 rounded-lg bg-neon-gradient flex items-center justify-center font-black text-white text-xs shrink-0">
+                                                {{ strtoupper(substr($booking->user?->name ?? 'M', 0, 1)) }}
+                                            </div>
+                                        @endif
+                                        <div class="min-w-0">
+                                            <div class="font-bold text-white text-sm truncate">{{ $booking->user->name ?? 'N/A' }}</div>
+                                            <div class="text-gray-400 text-[11px] truncate">{{ $booking->user->email ?? '' }}</div>
+                                            <div class="text-[10px] text-[#ff5b00] font-mono mt-0.5 uppercase">
+                                                Plan: {{ $booking->user->activeSubscription->plan->name ?? 'No Active Plan' }}
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="py-4 px-4">
@@ -71,6 +143,7 @@
                                         <div class="text-[10px] text-gray-400 font-normal">Subscription Pass</div>
                                     @else
                                         <span class="text-green-400">{{ number_format($booking->price, 2) }} EGP</span>
+                                        <div class="text-[10px] text-gray-400 font-normal">Out-of-Pocket</div>
                                     @endif
                                 </td>
                                 <td class="py-4 px-4">
@@ -104,7 +177,7 @@
                                                     <i class="ri-refund-2-line"></i> Resolve Refund
                                                 </button>
 
-                                                <!-- Popover Menu Directly Under the Button (No Full-Screen Backdrop) -->
+                                                <!-- Popover Menu -->
                                                 <div x-show="openRefund"
                                                      @click.away="openRefund = false"
                                                      x-transition:enter="transition ease-out duration-150"
@@ -149,30 +222,44 @@
                                                     </form>
                                                 </div>
                                             </div>
-                                        @elseif($booking->status === 'confirmed')
-                                            <form action="{{ route('bookings.cancel', $booking->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white font-black uppercase text-[10px] transition cursor-pointer">
-                                                    Cancel
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span class="text-gray-500 text-xs italic">Processed</span>
+                                        @endif
+
+                                        @if($booking->user_id)
+                                            <a
+                                                href="{{ route('chat.show', $booking->user_id) }}"
+                                                class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-[10px] font-bold transition flex items-center gap-1 border border-white/10"
+                                                title="Chat with Member"
+                                            >
+                                                <i class="ri-chat-smile-2-line text-[#ff5b00]"></i> Member
+                                            </a>
+                                        @endif
+
+                                        @if($booking->trainer_id)
+                                            <a
+                                                href="{{ route('chat.show', $booking->trainer_id) }}"
+                                                class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-[10px] font-bold transition flex items-center gap-1 border border-white/10"
+                                                title="Chat with Coach"
+                                            >
+                                                <i class="ri-chat-smile-2-line text-sky-400"></i> Coach
+                                            </a>
                                         @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-8 text-center text-gray-400 italic">
-                                    No session bookings recorded in the system yet.
-                                </td>
+                                <td colspan="8" class="py-8 text-center text-gray-400 italic">No bookings match the selected criteria.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            @if($bookings->hasPages())
+                <div class="pt-4 border-t border-white/10">
+                    {{ $bookings->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

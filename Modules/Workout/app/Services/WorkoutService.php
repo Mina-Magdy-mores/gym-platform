@@ -17,32 +17,29 @@ class WorkoutService
     {
         $user = User::find($trainerId);
 
-        // 1. Master Admin sees all platform members
+        // 1. Master Admin sees all platform members (role 'member' only)
         if ($user && $user->hasRole('admin')) {
-            return User::with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
-                ->whereDoesntHave('roles', function($q) {
-                    $q->where('name', 'admin');
-                })
+            return User::role('member')
+                ->with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
                 ->latest()
                 ->get();
         }
 
-        // 2. Fetch all User IDs who have booked sessions with this trainer
+        // 2. Fetch all Member IDs who have booked sessions with this trainer
         $memberIds = Booking::where('trainer_id', $trainerId)
             ->pluck('user_id')
             ->unique();
 
         if ($memberIds->isNotEmpty()) {
-            return User::whereIn('id', $memberIds)
+            return User::role('member')
+                ->whereIn('id', $memberIds)
                 ->with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
                 ->get();
         }
 
-        // 3. Fallback: If no specific bookings found -> show all members for trainer to assign
-        return User::with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
-            ->whereDoesntHave('roles', function($q) {
-                $q->where('name', 'admin');
-            })
+        // 3. Fallback: If no specific bookings found -> show registered members only
+        return User::role('member')
+            ->with(['activeSubscription.plan', 'activeWorkoutRoutine.exercises', 'activeDietPlan.meals'])
             ->latest()
             ->get();
     }

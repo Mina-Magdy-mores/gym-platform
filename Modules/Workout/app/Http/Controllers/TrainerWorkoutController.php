@@ -20,13 +20,28 @@ class TrainerWorkoutController extends Controller
     }
 
     /**
-     * Display members list assigned to trainer.
+     * Display members list assigned to trainer or comprehensive coaches oversight for Admin.
      */
-    public function members(): View
+    public function members(Request $request): View
     {
-        $members = $this->workoutService->getTrainerMembers(Auth::id());
+        $user = $request->user();
+        $members = $this->workoutService->getTrainerMembers($user->id);
+        $trainers = collect();
 
-        return view('workout::trainer.members.index', compact('members'));
+        if ($user->hasRole('admin')) {
+            $trainers = User::role('trainer')
+                ->with([
+                    'media',
+                    'createdWorkoutRoutines.exercises',
+                    'createdWorkoutRoutines.user',
+                    'createdDietPlans.meals',
+                    'createdDietPlans.user',
+                    'trainerBookings.user',
+                ])
+                ->get();
+        }
+
+        return view('workout::trainer.members.index', compact('members', 'trainers'));
     }
 
     /**
