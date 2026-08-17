@@ -15,6 +15,8 @@ use Modules\Payment\Models\Payment;
 use Modules\Subscription\Models\Booking;
 use Modules\Subscription\Models\UserSubscription;
 use Modules\Wallet\Models\TrainerWallet;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -25,7 +27,16 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens, InteractsWithMedia;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, InteractsWithMedia, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'phone', 'is_active', 'is_blocked', 'block_reason'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('users');
+    }
 
     /**
      * Get the attributes that should be cast.

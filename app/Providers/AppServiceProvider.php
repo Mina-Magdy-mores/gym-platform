@@ -8,6 +8,10 @@ use App\Events\NotificationSent as RealtimeNotificationSent;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -23,7 +27,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ─── Real-Time WebSocket Notification Dispatcher ───
+        // ─── 1. Enterprise Security Rate Limiters ───
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->input('email') . $request->ip());
+        });
+
+        RateLimiter::for('chat', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // ─── 2. Real-Time WebSocket Notification Dispatcher ───
         // Whenever any notification is saved to the 'database' channel,
         // automatically broadcast it in real-time to the recipient's private channel.
         Event::listen(NotificationSent::class, function (NotificationSent $event) {

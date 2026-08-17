@@ -11,6 +11,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 - php - 8.5
 - laravel/framework (LARAVEL) - v13
+- laravel/horizon (HORIZON) - v5
 - laravel/prompts (PROMPTS) - v0
 - laravel/sanctum (SANCTUM) - v4
 - laravel/boost (BOOST) - v2
@@ -18,9 +19,11 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1
 - laravel/pint (PINT) - v1
+- laravel/telescope (TELESCOPE) - v5
 - pestphp/pest (PEST) - v5
 - phpunit/phpunit (PHPUNIT) - v13
 - alpinejs (ALPINEJS) - v3
+- laravel-echo (ECHO) - v2
 - tailwindcss (TAILWINDCSS) - v3
 
 ## Skills Activation

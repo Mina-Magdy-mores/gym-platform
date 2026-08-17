@@ -7,9 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Payment\Models\Payment;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class UserSubscription extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'user_id', 'subscription_plan_id', 'status', 'price_paid',
+                'remaining_freeze_days', 'remaining_invitations', 'remaining_inbody_scans',
+                'remaining_pt_sessions', 'remaining_kickboxing_classes', 'remaining_nutrition_plans'
+            ])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('subscriptions');
+    }
     /**
      * The attributes that are mass assignable.
      */

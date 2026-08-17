@@ -18,7 +18,10 @@ class ProfileService
         }
 
         if (isset($data['email'])) {
-            $user->email = $data['email'];
+            if ($user->email !== $data['email']) {
+                $user->email = $data['email'];
+                $user->email_verified_at = null;
+            }
         }
 
         if (isset($data['password'])) {

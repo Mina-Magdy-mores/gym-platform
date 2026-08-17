@@ -7,10 +7,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Payment\Models\Payment;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class SubscriptionPlan extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name', 'duration_months', 'price', 'free_days', 
+                'freeze_days', 'invitations_count', 'inbody_scans', 
+                'pt_sessions', 'kickboxing_classes', 'nutrition_plans', 
+                'spa_access', 'is_active', 'is_featured'
+            ])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('subscription_plans');
+    }
 
     protected $fillable = [
         'name',

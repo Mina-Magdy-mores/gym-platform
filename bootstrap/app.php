@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('api', \App\Http\Middleware\CheckUserBlocked::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\CheckUserActive::class);
+        $middleware->appendToGroup('api', 'throttle:api');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

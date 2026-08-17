@@ -9,9 +9,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Payment\Models\Payment;
 use Modules\Wallet\Models\WalletTransaction;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Booking extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'user_id', 'trainer_id', 'booking_date', 'start_time', 'end_time',
+                'status', 'price', 'refund_status', 'refund_method', 'refunded_amount'
+            ])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('bookings');
+    }
     /**
      * The attributes that are mass assignable.
      */

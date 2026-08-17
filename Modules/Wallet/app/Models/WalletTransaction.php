@@ -5,9 +5,21 @@ namespace Modules\Wallet\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Subscription\Models\Booking;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class WalletTransaction extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['trainer_wallet_id', 'booking_id', 'amount', 'commission_amount', 'net_amount', 'type', 'status'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('wallet_transactions');
+    }
     protected $fillable = [
         'trainer_wallet_id',
         'booking_id',

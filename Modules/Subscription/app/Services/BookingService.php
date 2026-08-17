@@ -182,7 +182,7 @@ class BookingService
                 } else {
                     // Scenario B: Paid booking -> Mark as refund_pending or execute refund
                     $booking->refund_status = 'pending';
-                    $booking->refund_method = $ref0undMethod ?? 'instapay';
+                    $booking->refund_method = $refundMethod ?? 'instapay';
                     $booking->refunded_amount = $booking->price;
                 }
 

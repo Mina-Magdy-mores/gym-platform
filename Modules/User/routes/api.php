@@ -15,7 +15,7 @@ Route::prefix('v1')->group(function () {
 
     // Public Authentication Routes
     Route::post('register', [ApiAuthController::class, 'register']);
-    Route::post('login', [ApiAuthController::class, 'login']);
+    Route::post('login', [ApiAuthController::class, 'login'])->middleware('throttle:login');
 
     // Protected Routes (Requires Sanctum Token)
     Route::middleware(['auth:sanctum'])->group(function () {

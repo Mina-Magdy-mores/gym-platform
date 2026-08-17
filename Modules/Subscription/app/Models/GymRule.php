@@ -4,9 +4,21 @@ namespace Modules\Subscription\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class GymRule extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['rule_number', 'rule_text', 'is_active', 'sort_order'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('gym_rules');
+    }
     protected $fillable = [
         'rule_number',
         'rule_text',
