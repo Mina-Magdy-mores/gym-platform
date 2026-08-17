@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Traits\CacheableServiceTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
 use Modules\Subscription\Models\GymRule;
@@ -209,29 +210,33 @@ class SubscriptionService
     }
 
     /**
-     * Subscribe user to a plan.
+     * Subscribe user to a plan with Atomic Lock & DB transaction to prevent double-charging.
      */
     public function subscribeUser(User $user, int $planId): UserSubscription
     {
-        $plan = SubscriptionPlan::findOrFail($planId);
+        return Cache::lock('subscribe_user_' . $user->id, 10)->block(5, function () use ($user, $planId) {
+            return DB::transaction(function () use ($user, $planId) {
+                $plan = SubscriptionPlan::findOrFail($planId);
 
-        $startDate = now();
-        $endDate = now()->addMonths($plan->duration_months)->addDays($plan->free_days);
+                $startDate = now();
+                $endDate = now()->addMonths($plan->duration_months)->addDays($plan->free_days);
 
-        return UserSubscription::create([
-            'user_id' => $user->id,
-            'subscription_plan_id' => $plan->id,
-            'starts_at' => $startDate,
-            'ends_at' => $endDate,
-            'status' => 'active',
-            'price_paid' => $plan->price,
-            'remaining_freeze_days' => $plan->freeze_days,
-            'remaining_invitations' => $plan->invitations_count,
-            'remaining_inbody_scans' => $plan->inbody_scans,
-            'remaining_pt_sessions' => $plan->pt_sessions,
-            'remaining_kickboxing_classes' => $plan->kickboxing_classes,
-            'remaining_nutrition_plans' => $plan->nutrition_plans,
-        ]);
+                return UserSubscription::create([
+                    'user_id' => $user->id,
+                    'subscription_plan_id' => $plan->id,
+                    'starts_at' => $startDate,
+                    'ends_at' => $endDate,
+                    'status' => 'active',
+                    'price_paid' => $plan->price,
+                    'remaining_freeze_days' => $plan->freeze_days,
+                    'remaining_invitations' => $plan->invitations_count,
+                    'remaining_inbody_scans' => $plan->inbody_scans,
+                    'remaining_pt_sessions' => $plan->pt_sessions,
+                    'remaining_kickboxing_classes' => $plan->kickboxing_classes,
+                    'remaining_nutrition_plans' => $plan->nutrition_plans,
+                ]);
+            });
+        });
     }
 
     /**

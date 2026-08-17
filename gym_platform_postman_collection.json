@@ -1,0 +1,759 @@
+{
+	"info": {
+		"_postman_id": "fitclub-enterprise-api-v1-master",
+		"name": "FIT CLUB Platform - Master Enterprise API Collection (v1.0)",
+		"description": "Complete production-grade RESTful API collection for FIT CLUB Gym Management Platform with 100% Web-to-API Parity. Covers Landing Page, Authentication, Profile, Member Subscriptions, Certified Trainers, Private Bookings, Trainer Wallet & Payouts, Workout Routines, Nutrition Diets, Real-Time WebSockets Chat, Invoices, and Admin Moderation & Infrastructure.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "bearer_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearer_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "01. Public & Landing Page (Home, Coaches, Plans)",
+			"item": [
+				{
+					"name": "Consolidated Landing Page Payload",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/landing",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "landing"]
+						}
+					}
+				},
+				{
+					"name": "Public Certified Trainers Showcase",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainers",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "trainers"]
+						}
+					}
+				},
+				{
+					"name": "Get Public Active Plans",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/plans",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "plans"]
+						}
+					}
+				},
+				{
+					"name": "Get Gym Operating Schedules",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/schedules",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "schedules"]
+						}
+					}
+				},
+				{
+					"name": "Get Gym Rules & Regulations",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/gym-rules",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "gym-rules"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "02. Authentication & User Profile",
+			"item": [
+				{
+					"name": "Register New Member (Auto-Saves Token)",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"if (pm.response.code === 201 || pm.response.code === 200) {",
+								"    var jsonData = pm.response.json();",
+								"    var token = jsonData.token || (jsonData.data ? jsonData.data.token : null);",
+								"    if (token) { pm.collectionVariables.set('bearer_token', token); }",
+								"}"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Captain Ahmed\",\n    \"email\": \"ahmed@fitclub.com\",\n    \"phone\": \"01012345678\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login (Auto-Saves Bearer Token)",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"if (pm.response.code === 200) {",
+								"    var jsonData = pm.response.json();",
+								"    var token = jsonData.token || (jsonData.data ? jsonData.data.token : null);",
+								"    if (token) { pm.collectionVariables.set('bearer_token', token); }",
+								"}"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"mina@gym.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "login"]
+						}
+					}
+				},
+				{
+					"name": "Get Authenticated Profile",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile & Avatar",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "name", "value": "Mina Magdy Updated", "type": "text" },
+								{ "key": "email", "value": "mina@gym.com", "type": "text" },
+								{ "key": "avatar", "type": "file", "src": [] }
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Delete Media Attachment",
+					"request": {
+						"method": "DELETE",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile/media/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile", "media", "1"]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logout"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "03. Subscriptions & Member Dashboard",
+			"item": [
+				{
+					"name": "Member Dashboard (Real-time Benefits & Quotas)",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/member/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "member", "dashboard"]
+						}
+					}
+				},
+				{
+					"name": "Subscribe to Plan or Upgrade (Atomic Lock)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subscription_plan_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/subscriptions",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "subscriptions"]
+						}
+					}
+				},
+				{
+					"name": "Get User Notifications",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications"]
+						}
+					}
+				},
+				{
+					"name": "Mark Single Notification As Read",
+					"request": {
+						"method": "PATCH",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/1/read",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", "1", "read"]
+						}
+					}
+				},
+				{
+					"name": "Mark All Notifications As Read",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/mark-all-read",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", "mark-all-read"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "04. Private Trainer Bookings",
+			"item": [
+				{
+					"name": "List User Bookings",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/bookings",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "bookings"]
+						}
+					}
+				},
+				{
+					"name": "Book Private Trainer Session (Pessimistic Lock)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"trainer_id\": 2,\n    \"booking_date\": \"2026-08-25\",\n    \"start_time\": \"14:00:00\",\n    \"end_time\": \"15:00:00\",\n    \"notes\": \"Shoulder hypertrophy & core stability session.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/bookings",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "bookings"]
+						}
+					}
+				},
+				{
+					"name": "Cancel Booking & Refund Recovery",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/bookings/1/cancel",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "bookings", "1", "cancel"]
+						}
+					}
+				},
+				{
+					"name": "Complete Booking Session",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/bookings/1/complete",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "bookings", "1", "complete"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "05. Trainer Wallet, Payouts & Vouchers",
+			"item": [
+				{
+					"name": "Get Trainer Wallet & Earnings History",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainer/wallet",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "trainer", "wallet"]
+						}
+					}
+				},
+				{
+					"name": "Submit Trainer Payout Request (Pessimistic Lock)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 500,\n    \"payment_method\": \"instapay\",\n    \"account_details\": \"coach_ahmed@instapay\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/trainer/wallet/payout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "trainer", "wallet", "payout"]
+						}
+					}
+				},
+				{
+					"name": "Get Payout Voucher Details",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/payouts/1/voucher",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "payouts", "1", "voucher"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "06. Workout Routines & Nutrition Diets",
+			"item": [
+				{
+					"name": "List Workout Routines",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/routines",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "routines"]
+						}
+					}
+				},
+				{
+					"name": "Show Workout Routine Details",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/routines/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "routines", "1"]
+						}
+					}
+				},
+				{
+					"name": "Coach Create Workout Routine",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 3,\n    \"title\": \"Hypertrophy Push Day\",\n    \"goal\": \"Chest & Shoulder Growth\",\n    \"status\": \"active\",\n    \"exercises\": [\n        {\n            \"day_name\": \"Day 1 - Push\",\n            \"exercise_name\": \"Incline Dumbbell Press\",\n            \"target_muscle\": \"Upper Chest\",\n            \"sets\": 4,\n            \"reps\": \"10-12\",\n            \"rest_seconds\": 90\n        },\n        {\n            \"day_name\": \"Day 1 - Push\",\n            \"exercise_name\": \"Lateral Raises\",\n            \"target_muscle\": \"Side Delts\",\n            \"sets\": 4,\n            \"reps\": \"15\",\n            \"rest_seconds\": 60\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/routines",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "routines"]
+						}
+					}
+				},
+				{
+					"name": "List Diet Plans",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/diets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "diets"]
+						}
+					}
+				},
+				{
+					"name": "Show Diet Plan Details",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/diets/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "diets", "1"]
+						}
+					}
+				},
+				{
+					"name": "Coach Create Diet Plan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 3,\n    \"title\": \"Lean Bulking Plan 2800 Kcal\",\n    \"daily_calories\": 2800,\n    \"protein_grams\": 180,\n    \"carbs_grams\": 320,\n    \"fats_grams\": 65,\n    \"status\": \"active\",\n    \"meals\": [\n        {\n            \"meal_name\": \"Breakfast\",\n            \"meal_time\": \"08:30 AM\",\n            \"food_items\": \"4 Whole Eggs + 80g Oatmeal + Berries\",\n            \"calories\": 600\n        },\n        {\n            \"meal_name\": \"Post-Workout Lunch\",\n            \"meal_time\": \"02:00 PM\",\n            \"food_items\": \"200g Grilled Chicken Breast + 250g Basmati Rice + Green Salad\",\n            \"calories\": 850\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/diets",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "diets"]
+						}
+					}
+				},
+				{
+					"name": "Coach Athletes Roster",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workouts/athletes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workouts", "athletes"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "07. Real-Time Chat & Messaging",
+			"item": [
+				{
+					"name": "List Active Conversations & Contacts",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/chats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "chats"]
+						}
+					}
+				},
+				{
+					"name": "Initialize or Find 1-on-1 Chat Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/chats/start",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "chats", "start"]
+						}
+					}
+				},
+				{
+					"name": "Get Chat Room Messages History",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/chats/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "chats", "1"]
+						}
+					}
+				},
+				{
+					"name": "Send Message (WebSockets Broadcast + Attachment)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "message", "value": "Hi Coach, ready for today session!", "type": "text" },
+								{ "key": "attachment", "type": "file", "src": [] }
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/chats/1/messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "chats", "1", "messages"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "08. Invoices & Admin Financial Ledger",
+			"item": [
+				{
+					"name": "Get Invoice Details",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/invoices/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "invoices", "1"]
+						}
+					}
+				},
+				{
+					"name": "Download Invoice PDF",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/pdf", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/invoices/1/download",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "invoices", "1", "download"]
+						}
+					}
+				},
+				{
+					"name": "Admin Financial Ledger API",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/payments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "payments"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "09. Admin Moderation & Infrastructure",
+			"item": [
+				{
+					"name": "Admin List Users",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "users"]
+						}
+					}
+				},
+				{
+					"name": "Admin Toggle User Active Status",
+					"request": {
+						"method": "PATCH",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/users/1/toggle-active",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "users", "1", "toggle-active"]
+						}
+					}
+				},
+				{
+					"name": "Admin Block Abusive User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Suspicious activities detected.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/users/1/block",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "users", "1", "block"]
+						}
+					}
+				},
+				{
+					"name": "Admin Unblock User",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/users/1/unblock",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "users", "1", "unblock"]
+						}
+					}
+				},
+				{
+					"name": "Admin List Certified Trainers",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/trainers",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "trainers"]
+						}
+					}
+				},
+				{
+					"name": "Admin Recruit Certified Trainer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json", "type": "string" },
+							{ "key": "Content-Type", "value": "application/json", "type": "string" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Coach Tarek\",\n    \"email\": \"tarek@fitclub.com\",\n    \"phone\": \"01234567890\",\n    \"session_rate\": 250,\n    \"specialties\": \"Powerlifting & Strength\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/trainers",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "trainers"]
+						}
+					}
+				},
+				{
+					"name": "Admin Manage Gym Rules (CRUD)",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/gym-rules",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "gym-rules"]
+						}
+					}
+				},
+				{
+					"name": "Admin Approve Trainer Payout",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/payouts/1/approve",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "payouts", "1", "approve"]
+						}
+					}
+				},
+				{
+					"name": "Admin Reject Trainer Payout",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/payouts/1/reject",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "payouts", "1", "reject"]
+						}
+					}
+				},
+				{
+					"name": "Admin Process Booking Refund",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/bookings/1/refund",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "bookings", "1", "refund"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

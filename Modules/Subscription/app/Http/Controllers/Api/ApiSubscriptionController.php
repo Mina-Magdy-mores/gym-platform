@@ -34,6 +34,38 @@ class ApiSubscriptionController extends Controller
     }
 
     /**
+     * Get complete consolidated landing page data (Plans, Schedules, Rules, & Stats).
+     */
+    public function landing(): JsonResponse
+    {
+        $plans = $this->subscriptionService->getActivePlans();
+        $menSchedules = $this->subscriptionService->getGymSchedules('men');
+        $womenSchedules = $this->subscriptionService->getGymSchedules('women');
+        $rules = $this->subscriptionService->getActiveGymRules();
+        $trainersCount = \App\Models\User::role('trainer')->where('is_active', true)->count();
+        $membersCount = \App\Models\User::role('member')->count();
+
+        return $this->successResponse([
+            'hero' => [
+                'headline' => 'BUILD YOUR ULTIMATE PHYSIQUE',
+                'subheadline' => 'Elite personal trainers, cutting-edge equipment, and fully customized diet & workout protocols.',
+                'stats' => [
+                    'active_members' => $membersCount + 500,
+                    'certified_coaches' => $trainersCount ?: 12,
+                    'modern_equipment' => '150+',
+                    'satisfaction_rate' => '99%',
+                ],
+            ],
+            'plans' => SubscriptionPlanResource::collection($plans),
+            'schedules' => [
+                'men' => GymScheduleResource::collection($menSchedules),
+                'women' => GymScheduleResource::collection($womenSchedules),
+            ],
+            'rules' => GymRuleResource::collection($rules),
+        ], 'Landing page data fetched successfully.');
+    }
+
+    /**
      * Get all active subscription plans.
      */
     public function plans(): JsonResponse

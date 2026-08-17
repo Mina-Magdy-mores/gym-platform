@@ -59,4 +59,30 @@ class ApiWalletController extends Controller
             return $this->errorResponse($e->getMessage(), 422);
         }
     }
+
+    /**
+     * Get voucher receipt data for a payout request.
+     */
+    public function voucher(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $payoutRequest = \Modules\Wallet\Models\PayoutRequest::with('user')->findOrFail($id);
+
+        if ($user->id !== $payoutRequest->user_id && ! $user->hasRole('admin')) {
+            return $this->errorResponse('Unauthorized to view this voucher.', 403);
+        }
+
+        return $this->successResponse([
+            'voucher_number' => 'VOUCHER-PAY-' . str_pad($payoutRequest->id, 6, '0', STR_PAD_LEFT),
+            'trainer_name' => $payoutRequest->user->name,
+            'trainer_email' => $payoutRequest->user->email,
+            'amount' => (float) $payoutRequest->amount,
+            'currency' => 'EGP',
+            'payment_method' => strtoupper($payoutRequest->payment_method),
+            'account_details' => $payoutRequest->account_details,
+            'status' => $payoutRequest->status,
+            'requested_at' => $payoutRequest->created_at->toIso8601String(),
+            'processed_at' => $payoutRequest->updated_at->toIso8601String(),
+        ], 'Payout voucher details fetched successfully.');
+    }
 }

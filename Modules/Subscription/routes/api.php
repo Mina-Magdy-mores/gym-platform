@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminBookingController;
+use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminGymRuleController;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminGymScheduleController;
 use Modules\Subscription\Http\Controllers\Api\Admin\ApiAdminSubscriptionPlanController;
 use Modules\Subscription\Http\Controllers\Api\ApiBookingController;
@@ -16,14 +17,15 @@ use Modules\Subscription\Http\Controllers\Api\ApiSubscriptionController;
 
 Route::prefix('v1')->group(function () {
 
-    // Public Routes (Plans, Gym Operating Schedules & Regulations)
+    // Public Routes (Plans, Gym Operating Schedules & Regulations, Landing Page payload)
+    Route::get('landing', [ApiSubscriptionController::class, 'landing']);
     Route::get('plans', [ApiSubscriptionController::class, 'plans']);
     Route::get('schedules', [ApiSubscriptionController::class, 'schedules']);
     Route::get('gym-rules', [ApiSubscriptionController::class, 'gymRules']);
 
     // Protected Routes (Requires Sanctum Token)
     Route::middleware(['auth:sanctum'])->group(function () {
-        
+
         // Member Dashboard Real-time Benefits & Usage API
         Route::get('member/dashboard', [ApiSubscriptionController::class, 'memberDashboard']);
 
@@ -41,7 +43,7 @@ Route::prefix('v1')->group(function () {
         Route::post('bookings/{booking}/cancel', [ApiBookingController::class, 'cancel']);
         Route::post('bookings/{booking}/complete', [ApiBookingController::class, 'complete']);
 
-        // Admin Only API Management Endpoints (Plans, Schedules & Bookings Refund Resolution)
+        // Admin Only API Management Endpoints (Plans, Schedules, Gym Rules & Bookings Refund Resolution)
         Route::middleware(['role:admin'])->prefix('admin')->group(function () {
             // Plans Management API
             Route::apiResource('plans', ApiAdminSubscriptionPlanController::class);
@@ -49,6 +51,10 @@ Route::prefix('v1')->group(function () {
 
             // Schedules Management API
             Route::apiResource('schedules', ApiAdminGymScheduleController::class);
+
+            // Gym Rules & Regulations API
+            Route::apiResource('gym-rules', ApiAdminGymRuleController::class);
+            Route::patch('gym-rules/{id}/toggle', [ApiAdminGymRuleController::class, 'toggleActive']);
 
             // Master Bookings & Refund Resolution API
             Route::get('bookings', [ApiAdminBookingController::class, 'index']);

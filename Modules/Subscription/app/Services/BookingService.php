@@ -80,7 +80,11 @@ class BookingService
 
             $trainer = User::findOrFail($trainerId);
             $sessionPrice = (float) ($trainer->session_rate ?? $data['price'] ?? 200.00);
-            $activeSub = $user->activeSubscription;
+            $activeSub = UserSubscription::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->where('ends_at', '>=', now())
+                ->lockForUpdate()
+                ->first();
 
             // CASE 1: Member has active subscription with remaining PT sessions -> Deduct 1 session & Confirm Immediately
             if ($activeSub && $activeSub->remaining_pt_sessions > 0) {

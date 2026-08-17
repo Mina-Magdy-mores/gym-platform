@@ -232,5 +232,33 @@
                 </button>
             </div>
         </div>
+
+        <!-- Universal Enterprise Double-Submit Prevention & Form Debounce -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('form').forEach(function (form) {
+                    form.addEventListener('submit', function (e) {
+                        if (form.dataset.submitting === 'true') {
+                            e.preventDefault();
+                            return false;
+                        }
+                        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+                        if (submitBtn) {
+                            form.dataset.submitting = 'true';
+                            submitBtn.disabled = true;
+                            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                            const originalHtml = submitBtn.innerHTML;
+                            submitBtn.innerHTML = '<i class="ri-loader-4-line animate-spin inline-block mr-1"></i> Processing...';
+                            setTimeout(function () {
+                                form.dataset.submitting = 'false';
+                                submitBtn.disabled = false;
+                                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                                submitBtn.innerHTML = originalHtml;
+                            }, 8000);
+                        }
+                    });
+                });
+            });
+        </script>
     </body>
 </html>

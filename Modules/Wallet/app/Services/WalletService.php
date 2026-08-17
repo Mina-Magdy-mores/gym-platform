@@ -78,7 +78,7 @@ class WalletService
     }
 
     /**
-     * Submit trainer payout request & freeze requested balance into pending_payout.
+     * Submit trainer payout request with pessimistic lock & freeze requested balance into pending_payout.
      */
     public function requestTrainerPayout(User $trainer, float $amount, string $paymentMethod, string $accountDetails): PayoutRequest
     {
@@ -86,16 +86,15 @@ class WalletService
             throw new \Exception('Payout amount must be greater than zero.');
         }
 
-        $wallet = TrainerWallet::firstOrCreate(
-            ['user_id' => $trainer->id],
-            ['balance' => 0.00, 'total_earned' => 0.00, 'pending_payout' => 0.00]
-        );
+        $payoutRequest = DB::transaction(function () use ($trainer, $amount, $paymentMethod, $accountDetails) {
+            $wallet = TrainerWallet::where('user_id', $trainer->id)
+                ->lockForUpdate()
+                ->first();
 
-        if ((float) $wallet->balance < $amount) {
-            throw new \Exception('Insufficient wallet balance to request this payout.');
-        }
+            if (! $wallet || (float) $wallet->balance < $amount) {
+                throw new \Exception('Insufficient wallet balance to request this payout.');
+            }
 
-        $payoutRequest = DB::transaction(function () use ($trainer, $wallet, $amount, $paymentMethod, $accountDetails) {
             // Freeze requested balance from available balance to pending_payout
             $wallet->decrement('balance', $amount);
             $wallet->increment('pending_payout', $amount);
@@ -120,40 +119,47 @@ class WalletService
     }
 
     /**
-     * Admin Approve Payout Request: Settle pending_payout balance & record ledger payout transaction.
+     * Admin Approve Payout Request: Settle pending_payout balance & record ledger payout transaction with pessimistic lock.
      */
     public function approvePayoutRequest(PayoutRequest $payoutRequest): PayoutRequest
     {
-        if ($payoutRequest->status !== 'pending') {
-            throw new \Exception('This payout request is already processed.');
-        }
+        return DB::transaction(function () use ($payoutRequest) {
+            $lockedRequest = PayoutRequest::where('id', $payoutRequest->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $wallet = TrainerWallet::where('user_id', $payoutRequest->user_id)->firstOrFail();
+            if ($lockedRequest->status !== 'pending') {
+                throw new \Exception('This payout request is already processed.');
+            }
 
-        return DB::transaction(function () use ($payoutRequest, $wallet) {
+            $wallet = TrainerWallet::where('user_id', $lockedRequest->user_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             // Settle frozen pending payout
-            $wallet->decrement('pending_payout', $payoutRequest->amount);
+            $wallet->decrement('pending_payout', $lockedRequest->amount);
 
             // Record Payout Ledger Transaction
             WalletTransaction::create([
                 'trainer_wallet_id' => $wallet->id,
                 'booking_id' => null,
-                'amount' => $payoutRequest->amount,
+                'amount' => $lockedRequest->amount,
                 'commission_amount' => 0.00,
-                'net_amount' => $payoutRequest->amount,
+                'net_amount' => $lockedRequest->amount,
                 'type' => 'payout',
                 'status' => 'completed',
-                'notes' => 'Payout approved and transferred via ' . strtoupper($payoutRequest->payment_method) . ' (' . $payoutRequest->account_details . ')',
+                'notes' => 'Payout disbursed via ' . strtoupper($lockedRequest->payment_method) . ' to account: ' . $lockedRequest->account_details,
             ]);
 
-            $payoutRequest->update(['status' => 'approved']);
+            $lockedRequest->update(['status' => 'approved']);
 
-            // Dispatch real-time notification to the trainer
-            if ($payoutRequest->user) {
-                Notification::send($payoutRequest->user, new PayoutApprovedNotification($payoutRequest));
+            // Dispatch real-time notification to trainer
+            $trainer = User::find($lockedRequest->user_id);
+            if ($trainer) {
+                Notification::send($trainer, new PayoutApprovedNotification($lockedRequest));
             }
 
-            return $payoutRequest;
+            return $lockedRequest;
         });
     }
 
