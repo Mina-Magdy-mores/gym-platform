@@ -17,6 +17,8 @@ use Modules\Subscription\Http\Controllers\SubscriptionController;
 
 // Public / Guest Subscription Plans & Checkout Route
 Route::get('plans', [SubscriptionController::class, 'plans'])->name('plans.index');
+Route::get('schedules', [SubscriptionController::class, 'plans'])->name('schedules.index');
+Route::get('membership-plans', [SubscriptionController::class, 'plans'])->name('subscription.plans');
 Route::get('checkout/{plan}', [SubscriptionController::class, 'checkout'])->middleware(['auth'])->name('checkout.show');
 
 Route::middleware(['auth'])->group(function () {

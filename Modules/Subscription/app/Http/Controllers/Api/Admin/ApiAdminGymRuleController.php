@@ -5,29 +5,27 @@ namespace Modules\Subscription\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Modules\Subscription\Models\GymRule;
-use Modules\Subscription\Services\SubscriptionService;
+use Modules\Subscription\Transformers\GymRuleResource;
+use Modules\User\Traits\ApiResponseTrait;
 
 class ApiAdminGymRuleController extends Controller
 {
-    protected SubscriptionService $subscriptionService;
-
-    public function __construct(SubscriptionService $subscriptionService)
-    {
-        $this->subscriptionService = $subscriptionService;
-    }
+    use ApiResponseTrait;
 
     /**
      * Admin: List all gym rules with status and ordering.
      */
     public function index(): JsonResponse
     {
-        $rules = GymRule::orderBy('order')->latest()->get();
+        $rules = GymRule::orderBy('sort_order', 'asc')
+            ->orderBy('rule_number', 'asc')
+            ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $rules,
-        ]);
+        return $this->successResponse([
+            'gym_rules' => GymRuleResource::collection($rules),
+        ], 'Gym rules fetched successfully.');
     }
 
     /**
@@ -36,24 +34,29 @@ class ApiAdminGymRuleController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'category' => 'required|in:general,equipment,hygiene,safety',
-            'icon' => 'nullable|string|max:100',
-            'order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
+            'rule_number' => 'nullable|integer|min:1',
+            'rule_text'   => 'required|string|max:1000',
+            'is_active'   => 'nullable|boolean',
+            'sort_order'  => 'nullable|integer|min:0',
         ]);
 
+        if (empty($validated['rule_number'])) {
+            $maxRuleNumber = GymRule::max('rule_number') ?? 0;
+            $validated['rule_number'] = $maxRuleNumber + 1;
+        }
+
+        if (!isset($validated['sort_order'])) {
+            $validated['sort_order'] = $validated['rule_number'];
+        }
+
         $validated['is_active'] = $request->boolean('is_active', true);
-        $validated['order'] = $validated['order'] ?? 0;
 
-        $rule = $this->subscriptionService->createGymRule($validated);
+        $rule = GymRule::create($validated);
+        Cache::forget('gym_rules_active');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Gym rule added successfully.',
-            'data' => $rule,
-        ], 201);
+        return $this->successResponse([
+            'gym_rule' => new GymRuleResource($rule),
+        ], 'Gym rule created successfully.', 201);
     }
 
     /**
@@ -64,21 +67,18 @@ class ApiAdminGymRuleController extends Controller
         $rule = GymRule::findOrFail($id);
 
         $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|required|string',
-            'category' => 'sometimes|required|in:general,equipment,hygiene,safety',
-            'icon' => 'nullable|string|max:100',
-            'order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
+            'rule_number' => 'sometimes|required|integer|min:1',
+            'rule_text'   => 'sometimes|required|string|max:1000',
+            'is_active'   => 'sometimes|boolean',
+            'sort_order'  => 'sometimes|integer|min:0',
         ]);
 
-        $rule = $this->subscriptionService->updateGymRule($rule, $validated);
+        $rule->update($validated);
+        Cache::forget('gym_rules_active');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Gym rule updated successfully.',
-            'data' => $rule,
-        ]);
+        return $this->successResponse([
+            'gym_rule' => new GymRuleResource($rule),
+        ], 'Gym rule updated successfully.');
     }
 
     /**
@@ -87,15 +87,12 @@ class ApiAdminGymRuleController extends Controller
     public function toggleActive(int $id): JsonResponse
     {
         $rule = GymRule::findOrFail($id);
-        $rule = $this->subscriptionService->updateGymRule($rule, [
-            'is_active' => ! $rule->is_active,
-        ]);
+        $rule->update(['is_active' => !$rule->is_active]);
+        Cache::forget('gym_rules_active');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Gym rule status updated.',
-            'data' => $rule,
-        ]);
+        return $this->successResponse([
+            'gym_rule' => new GymRuleResource($rule),
+        ], 'Gym rule status updated.');
     }
 
     /**
@@ -104,11 +101,9 @@ class ApiAdminGymRuleController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $rule = GymRule::findOrFail($id);
-        $this->subscriptionService->deleteGymRule($rule);
+        $rule->delete();
+        Cache::forget('gym_rules_active');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Gym rule deleted successfully.',
-        ]);
+        return $this->successResponse(null, 'Gym rule deleted successfully.');
     }
 }

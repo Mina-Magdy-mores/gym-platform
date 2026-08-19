@@ -14,11 +14,10 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="space-y-8 w-full">
 
-            <!-- Flash Alerts -->
-            @if(session('status') === 'booked')
+        <!-- Flash Alerts -->
+        @if(session('status') === 'booked')
                 <div class="p-4 rounded-xl glass-card border border-green-500/30 text-green-400 font-bold text-sm flex items-center gap-2">
                     <i class="ri-checkbox-circle-fill text-xl"></i>
                     <span>Trainer session booked successfully with race-condition locking protection!</span>
@@ -246,6 +245,5 @@
                 </div>
             </div>
 
-        </div>
     </div>
 </x-app-layout>

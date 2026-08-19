@@ -115,7 +115,7 @@
         <!-- Dynamic Content Wrapper (Squeezes / Shifts with Sidebar State) -->
         <div
             :class="sidebarOpen ? 'md:pl-64' : 'md:pl-20'"
-            class="min-h-screen flex flex-col justify-between relative z-10 transition-all duration-300 ease-in-out"
+            class="min-h-screen w-full flex flex-col justify-between relative z-10 transition-all duration-300 ease-in-out"
         >
             @include('layouts.navigation')
 
@@ -129,7 +129,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main class="flex-grow py-8">
+            <main class="flex-grow py-8 w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8">
                 {{ $slot }}
             </main>
 

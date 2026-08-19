@@ -4,53 +4,54 @@ namespace Modules\Workout\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Modules\Workout\Models\DietPlan;
+use Modules\Workout\Models\WorkoutRoutine;
 
 class WorkoutController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display member's personalized workout routine.
      */
-    public function index()
+    public function index(Request $request): View
     {
-        return view('workout::index');
+        $user = $request->user();
+
+        $routines = WorkoutRoutine::with(['trainer', 'exercises'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        $activeRoutine = $routines->firstWhere('status', 'active') ?? $routines->first();
+
+        return view('workout::index', compact('routines', 'activeRoutine'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display member's personalized nutrition and diet plan.
      */
-    public function create()
+    public function diet(Request $request): View
     {
-        return view('workout::create');
+        $user = $request->user();
+
+        $diets = DietPlan::with(['trainer', 'meals'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        $activeDiet = $diets->firstWhere('status', 'active') ?? $diets->first();
+
+        return view('workout::diet', compact('diets', 'activeDiet'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show specific workout routine.
      */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
+    public function show(WorkoutRoutine $workout): View
     {
-        return view('workout::show');
+        $workout->load(['trainer', 'exercises']);
+
+        return view('workout::show', compact('workout'));
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('workout::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
 }
+

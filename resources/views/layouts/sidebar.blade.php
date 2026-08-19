@@ -66,34 +66,19 @@
                 </span>
             </a>
 
-            <!-- Subscriptions / Plans (Members only) -->
+            <!-- Subscriptions / Plans & Schedules (Members only) -->
             @role('member')
                 <a
-                    href="{{ route('subscription.plans') }}"
+                    href="{{ route('plans.index') }}"
                     @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
                     :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
-                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('subscription.plans*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
+                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('plans.*', 'schedules.*', 'subscription.plans*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
                 >
-                    <i class="ri-price-tag-3-line text-lg shrink-0 {{ request()->routeIs('subscription.plans*') ? 'text-white' : 'text-amber-400' }}"></i>
-                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Plans & Pricing</span>
+                    <i class="ri-price-tag-3-line text-lg shrink-0 {{ request()->routeIs('plans.*', 'schedules.*', 'subscription.plans*') ? 'text-white' : 'text-amber-400' }}"></i>
+                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Plans & Schedules</span>
 
                     <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                        Plans & Pricing
-                    </span>
-                </a>
-
-                <!-- Class Schedules -->
-                <a
-                    href="{{ route('schedules.index') }}"
-                    @click="sidebarOpen = false; localStorage.setItem('fitclub_sidebar_open', 'false'); mobileSidebarOpen = false;"
-                    :class="sidebarOpen ? 'px-3.5 py-2.5' : 'justify-center p-2.5'"
-                    class="flex items-center gap-3.5 rounded-xl text-xs font-bold transition-all duration-200 group relative {{ request()->routeIs('schedules.*') ? 'bg-neon-gradient text-white shadow-lg shadow-[#ff5b00]/30 font-black' : 'text-gray-300 hover:text-white hover:bg-white/5' }}"
-                >
-                    <i class="ri-calendar-event-line text-lg shrink-0 {{ request()->routeIs('schedules.*') ? 'text-white' : 'text-sky-400' }}"></i>
-                    <span x-show="sidebarOpen" x-transition.opacity.duration.200ms class="truncate">Gym Classes</span>
-
-                    <span x-show="!sidebarOpen" class="fixed left-20 bg-[#181a24] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[70]">
-                        Gym Classes
+                        Plans & Schedules
                     </span>
                 </a>
 
@@ -362,27 +347,36 @@
     </div>
 
     <!-- Bottom User Profile Card inside Sidebar -->
-    <div class="p-3 border-t border-white/10 bg-white/[0.02] flex items-center" :class="sidebarOpen ? 'justify-start' : 'justify-center'">
-        @if(Auth::user()->hasMedia('avatar'))
-            <img src="{{ Auth::user()->getFirstMediaUrl('avatar', 'thumb') ?: Auth::user()->getFirstMediaUrl('avatar') }}" alt="{{ Auth::user()->name }}" class="w-9 h-9 rounded-xl object-cover border border-[#ff5b00]/50 shrink-0" :title="Auth::user()->name">
-        @else
-            <div class="w-9 h-9 rounded-xl bg-[#181a28] border border-white/10 flex items-center justify-center text-[#ff5b00] font-black uppercase shrink-0" :title="Auth::user()->name">
-                {{ substr(Auth::user()->name, 0, 1) }}
+    @auth
+        <div class="p-3 border-t border-white/10 bg-white/[0.02] flex items-center" :class="sidebarOpen ? 'justify-start' : 'justify-center'">
+            @if(Auth::user()->hasMedia('avatar'))
+                <img src="{{ Auth::user()->getFirstMediaUrl('avatar', 'thumb') ?: Auth::user()->getFirstMediaUrl('avatar') }}" alt="{{ Auth::user()->name }}" class="w-9 h-9 rounded-xl object-cover border border-[#ff5b00]/50 shrink-0" :title="Auth::user()->name">
+            @else
+                <div class="w-9 h-9 rounded-xl bg-[#181a28] border border-white/10 flex items-center justify-center text-[#ff5b00] font-black uppercase shrink-0" :title="Auth::user()->name">
+                    {{ substr(Auth::user()->name, 0, 1) }}
+                </div>
+            @endif
+            <div x-show="sidebarOpen" x-transition.opacity.duration.200ms class="min-w-0 flex-1 ml-3">
+                <p class="text-xs font-black text-white truncate">{{ Auth::user()->name }}</p>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">
+                    @if(Auth::user()->hasRole('admin'))
+                        🛡️ Master Admin
+                    @elseif(Auth::user()->hasRole('trainer'))
+                        🏋️ Certified Coach
+                    @else
+                        👤 Platform Member
+                    @endif
+                </span>
             </div>
-        @endif
-        <div x-show="sidebarOpen" x-transition.opacity.duration.200ms class="min-w-0 flex-1 ml-3">
-            <p class="text-xs font-black text-white truncate">{{ Auth::user()->name }}</p>
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">
-                @if(Auth::user()->hasRole('admin'))
-                    🛡️ Master Admin
-                @elseif(Auth::user()->hasRole('trainer'))
-                    🏋️ Certified Coach
-                @else
-                    👤 Platform Member
-                @endif
-            </span>
         </div>
-    </div>
+    @else
+        <div class="p-3 border-t border-white/10 bg-white/[0.02] flex items-center justify-center">
+            <a href="{{ route('login') }}" class="text-xs text-[#ff5b00] font-bold hover:underline flex items-center gap-1.5">
+                <i class="ri-login-box-line"></i>
+                <span x-show="sidebarOpen">Log In</span>
+            </a>
+        </div>
+    @endauth
 </aside>
 
 <!-- Backdrop Blur Overlay for Mobile Drawer Mode -->

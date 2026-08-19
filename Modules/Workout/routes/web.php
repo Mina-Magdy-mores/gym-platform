@@ -7,6 +7,7 @@ use Modules\Workout\Http\Controllers\WorkoutController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('workouts', WorkoutController::class)->names('workout');
+    Route::get('diets', [WorkoutController::class, 'diet'])->name('diet.index');
 });
 
 Route::middleware(['auth', 'role:trainer|admin'])->prefix('trainer')->group(function () {
