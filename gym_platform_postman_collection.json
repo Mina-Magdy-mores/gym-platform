@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "fitclub-enterprise-api-v1-master",
 		"name": "FIT CLUB Platform - Master Enterprise API Collection (v1.0)",
-		"description": "Complete production-grade RESTful API collection for FIT CLUB Gym Management Platform with 100% Web-to-API Parity. Covers Landing Page, Authentication, Profile, Member Subscriptions, Certified Trainers, Private Bookings, Trainer Wallet & Payouts, Workout Routines, Nutrition Diets, Real-Time WebSockets Chat, Invoices, and Admin Moderation & Infrastructure.",
+		"description": "# 🏋️ FIT CLUB Platform - Master RESTful API Collection\n\n> **Enterprise Clean Architecture & Mobile/Web Integration Standard**\n\nWelcome to the official API documentation and interactive collection for **FIT CLUB Gym Management Platform**.\n\n---\n\n## 🌐 Environments & Base URLs\n- **Localhost Development:** `http://127.0.0.1:8000/api/v1`\n- **Production Cloud:** `https://fitclub.laravel.cloud/api/v1`\n\n---\n\n## 🔑 Authentication (Laravel Sanctum)\nAll protected endpoints require a Bearer token in the `Authorization` header:\n```http\nAuthorization: Bearer {{bearer_token}}\nAccept: application/json\nContent-Type: application/json\n```\n\n> **⚡ Automatic Token Extraction:** When you execute `POST /register` or `POST /login`, this Postman collection automatically intercepts the returned token and saves it to the `{{bearer_token}}` variable. You can immediately call all protected endpoints with zero manual copy-pasting!\n\n---\n\n## 🛡️ Security Rate Limiting\n- **Login Attempts (`throttle:login`):** 5 requests / min (`HTTP 429` on breach)\n- **Global APIs (`throttle:api`):** 60 requests / min\n- **Real-Time Chat Messages (`throttle:chat`):** 30 messages / min",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -30,6 +30,7 @@
 	"item": [
 		{
 			"name": "01. Public & Landing Page (Home, Coaches, Plans)",
+			"description": "Public endpoints accessible by anyone without authentication. Used to populate the landing page, team showcases, operating hours, and gym code of conduct.",
 			"item": [
 				{
 					"name": "Consolidated Landing Page Payload",
@@ -41,8 +42,10 @@
 							"raw": "{{base_url}}/api/v1/landing",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "landing"]
-						}
-					}
+						},
+						"description": "Returns the complete landing page package in a single high-speed call including Hero copy, live stats, active subscription plans, schedules, and gym rules."
+					},
+					"response": []
 				},
 				{
 					"name": "Public Certified Trainers Showcase",
@@ -54,8 +57,10 @@
 							"raw": "{{base_url}}/api/v1/trainers",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "trainers"]
-						}
-					}
+						},
+						"description": "Retrieves the public directory of certified coaches with avatars, biographies, specialties, session pricing, and verified certificates."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Public Active Plans",
@@ -67,8 +72,10 @@
 							"raw": "{{base_url}}/api/v1/plans",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "plans"]
-						}
-					}
+						},
+						"description": "Lists all active membership plans with pricing, duration, and full perk quotas (PT sessions, InBody, Kickboxing, Freeze days)."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Gym Operating Schedules",
@@ -80,8 +87,10 @@
 							"raw": "{{base_url}}/api/v1/schedules",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "schedules"]
-						}
-					}
+						},
+						"description": "Returns daily operating schedule slots categorized by gender (`men` and `women`). Optional query param: `?gender=men`."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Gym Rules & Regulations",
@@ -93,13 +102,16 @@
 							"raw": "{{base_url}}/api/v1/gym-rules",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "gym-rules"]
-						}
-					}
+						},
+						"description": "Fetches active gym conduct rules, hygiene guidelines, and safety policies with category icons."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "02. Authentication & User Profile",
+			"description": "User registration, authentication, token management, and profile media management.",
 			"item": [
 				{
 					"name": "Register New Member (Auto-Saves Token)",
@@ -131,8 +143,10 @@
 							"raw": "{{base_url}}/api/v1/register",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "register"]
-						}
-					}
+						},
+						"description": "Registers a new member account and automatically generates a Sanctum Bearer Token, assigning the `member` role by default."
+					},
+					"response": []
 				},
 				{
 					"name": "Login (Auto-Saves Bearer Token)",
@@ -164,8 +178,10 @@
 							"raw": "{{base_url}}/api/v1/login",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "login"]
-						}
-					}
+						},
+						"description": "Authenticates user credentials. Rate-limited to 5 requests/minute (`throttle:login`). On success, the Bearer token is automatically persisted."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Authenticated Profile",
@@ -176,8 +192,10 @@
 							"raw": "{{base_url}}/api/v1/profile",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "profile"]
-						}
-					}
+						},
+						"description": "Returns full details of the authenticated user including active roles, media avatar, certificates, and active subscription status."
+					},
+					"response": []
 				},
 				{
 					"name": "Update Profile & Avatar",
@@ -196,8 +214,10 @@
 							"raw": "{{base_url}}/api/v1/profile",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "profile"]
-						}
-					}
+						},
+						"description": "Updates profile details and uploads user avatar image using Spatie MediaLibrary."
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Media Attachment",
@@ -208,8 +228,10 @@
 							"raw": "{{base_url}}/api/v1/profile/media/1",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "profile", "media", "1"]
-						}
-					}
+						},
+						"description": "Removes a specific media item (avatar or certificate) by its Media ID."
+					},
+					"response": []
 				},
 				{
 					"name": "Logout",
@@ -220,13 +242,16 @@
 							"raw": "{{base_url}}/api/v1/logout",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "logout"]
-						}
-					}
+						},
+						"description": "Revokes the active Sanctum access token."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "03. Subscriptions & Member Dashboard",
+			"description": "Member dashboard statistics, benefit quota tracking, subscription purchasing, and push notifications.",
 			"item": [
 				{
 					"name": "Member Dashboard (Real-time Benefits & Quotas)",
@@ -237,8 +262,10 @@
 							"raw": "{{base_url}}/api/v1/member/dashboard",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "member", "dashboard"]
-						}
-					}
+						},
+						"description": "Returns real-time benefit counters for the 7 quota items: Remaining PT sessions, InBody scans, Kickboxing classes, Guest invitations, Freeze days, and Nutrition plans."
+					},
+					"response": []
 				},
 				{
 					"name": "Subscribe to Plan or Upgrade (Atomic Lock)",
@@ -256,8 +283,10 @@
 							"raw": "{{base_url}}/api/v1/subscriptions",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "subscriptions"]
-						}
-					}
+						},
+						"description": "Subscribes the user to a plan or upgrades an existing plan within 7 days by calculating the price difference. Protected by an **Atomic Cache Lock** against double-charging."
+					},
+					"response": []
 				},
 				{
 					"name": "Get User Notifications",
@@ -268,8 +297,10 @@
 							"raw": "{{base_url}}/api/v1/notifications",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "notifications"]
-						}
-					}
+						},
+						"description": "Retrieves the list of in-app notifications (session bookings, low quota warnings, payout approvals)."
+					},
+					"response": []
 				},
 				{
 					"name": "Mark Single Notification As Read",
@@ -280,8 +311,10 @@
 							"raw": "{{base_url}}/api/v1/notifications/1/read",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "notifications", "1", "read"]
-						}
-					}
+						},
+						"description": "Marks a specific notification ID as read."
+					},
+					"response": []
 				},
 				{
 					"name": "Mark All Notifications As Read",
@@ -292,13 +325,16 @@
 							"raw": "{{base_url}}/api/v1/notifications/mark-all-read",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "notifications", "mark-all-read"]
-						}
-					}
+						},
+						"description": "Marks all unread notifications as read in bulk."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "04. Private Trainer Bookings",
+			"description": "Private coach booking workflows, concurrency collision protection, session completion, and cancellation refund policy.",
 			"item": [
 				{
 					"name": "List User Bookings",
@@ -309,8 +345,10 @@
 							"raw": "{{base_url}}/api/v1/bookings",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "bookings"]
-						}
-					}
+						},
+						"description": "Fetches all upcoming and past bookings for the logged-in member or coach."
+					},
+					"response": []
 				},
 				{
 					"name": "Book Private Trainer Session (Pessimistic Lock)",
@@ -328,8 +366,10 @@
 							"raw": "{{base_url}}/api/v1/bookings",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "bookings"]
-						}
-					}
+						},
+						"description": "Books a PT session with a coach. Applies a database **Pessimistic Lock** (`lockForUpdate`) preventing double bookings on the same slot, and decrements 1 PT session from the member's quota."
+					},
+					"response": []
 				},
 				{
 					"name": "Cancel Booking & Refund Recovery",
@@ -340,8 +380,10 @@
 							"raw": "{{base_url}}/api/v1/bookings/1/cancel",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "bookings", "1", "cancel"]
-						}
-					}
+						},
+						"description": "Cancels a booked session. If canceled > 24 hours prior to session start, 1 PT session is refunded to the member balance. If < 24 hours, no refund is granted to protect coach's schedule."
+					},
+					"response": []
 				},
 				{
 					"name": "Complete Booking Session",
@@ -352,13 +394,16 @@
 							"raw": "{{base_url}}/api/v1/bookings/1/complete",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "bookings", "1", "complete"]
-						}
-					}
+						},
+						"description": "Marks session as completed and automatically credits the coach's wallet with 85% net earnings and 15% platform commission."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "05. Trainer Wallet, Payouts & Vouchers",
+			"description": "Coach earnings, wallet ledger, payout requests (InstaPay / Vodafone Cash), and digital transaction vouchers.",
 			"item": [
 				{
 					"name": "Get Trainer Wallet & Earnings History",
@@ -369,8 +414,10 @@
 							"raw": "{{base_url}}/api/v1/trainer/wallet",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "trainer", "wallet"]
-						}
-					}
+						},
+						"description": "Retrieves trainer's financial overview: available balance, total earnings, pending payouts, and detailed transaction ledger."
+					},
+					"response": []
 				},
 				{
 					"name": "Submit Trainer Payout Request (Pessimistic Lock)",
@@ -388,8 +435,10 @@
 							"raw": "{{base_url}}/api/v1/trainer/wallet/payout",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "trainer", "wallet", "payout"]
-						}
-					}
+						},
+						"description": "Submits a payout request and freezes the requested amount into `pending_payout`. Protected by a database pessimistic lock."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Payout Voucher Details",
@@ -400,13 +449,16 @@
 							"raw": "{{base_url}}/api/v1/payouts/1/voucher",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "payouts", "1", "voucher"]
-						}
-					}
+						},
+						"description": "Retrieves full payout voucher details and bank disbursement receipt data."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "06. Workout Routines & Nutrition Diets",
+			"description": "Custom workout plans, exercise sets/reps, diet plans, macronutrients calculation, and athlete rosters.",
 			"item": [
 				{
 					"name": "List Workout Routines",
@@ -417,8 +469,10 @@
 							"raw": "{{base_url}}/api/v1/workouts/routines",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "routines"]
-						}
-					}
+						},
+						"description": "List routines for current user (Member sees their assigned routines; Coach sees routines they created)."
+					},
+					"response": []
 				},
 				{
 					"name": "Show Workout Routine Details",
@@ -429,8 +483,10 @@
 							"raw": "{{base_url}}/api/v1/workouts/routines/1",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "routines", "1"]
-						}
-					}
+						},
+						"description": "Fetches routine details with nested exercise breakdown (sets, reps, rest seconds, target muscle)."
+					},
+					"response": []
 				},
 				{
 					"name": "Coach Create Workout Routine",
@@ -448,8 +504,10 @@
 							"raw": "{{base_url}}/api/v1/workouts/routines",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "routines"]
-						}
-					}
+						},
+						"description": "Coach assigns a custom multi-day workout routine with nested exercise sets and reps."
+					},
+					"response": []
 				},
 				{
 					"name": "List Diet Plans",
@@ -460,8 +518,10 @@
 							"raw": "{{base_url}}/api/v1/workouts/diets",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "diets"]
-						}
-					}
+						},
+						"description": "Lists nutrition diet plans with total daily calories and macronutrient breakdown."
+					},
+					"response": []
 				},
 				{
 					"name": "Show Diet Plan Details",
@@ -472,8 +532,10 @@
 							"raw": "{{base_url}}/api/v1/workouts/diets/1",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "diets", "1"]
-						}
-					}
+						},
+						"description": "Fetches diet plan with daily meal items, timing, and calories."
+					},
+					"response": []
 				},
 				{
 					"name": "Coach Create Diet Plan",
@@ -491,8 +553,10 @@
 							"raw": "{{base_url}}/api/v1/workouts/diets",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "diets"]
-						}
-					}
+						},
+						"description": "Coach creates custom diet plan with daily calories, protein, carbs, fats, and scheduled meals."
+					},
+					"response": []
 				},
 				{
 					"name": "Coach Athletes Roster",
@@ -503,13 +567,16 @@
 							"raw": "{{base_url}}/api/v1/workouts/athletes",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "workouts", "athletes"]
-						}
-					}
+						},
+						"description": "Roster of members enrolled in private coaching with the logged-in trainer."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "07. Real-Time Chat & Messaging",
+			"description": "Real-time 1-on-1 chat rooms, WebSocket broadcast events, and image attachments.",
 			"item": [
 				{
 					"name": "List Active Conversations & Contacts",
@@ -520,8 +587,10 @@
 							"raw": "{{base_url}}/api/v1/chats",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "chats"]
-						}
-					}
+						},
+						"description": "Returns all active chat rooms ordered by most recent message, along with available contact list."
+					},
+					"response": []
 				},
 				{
 					"name": "Initialize or Find 1-on-1 Chat Room",
@@ -539,8 +608,10 @@
 							"raw": "{{base_url}}/api/v1/chats/start",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "chats", "start"]
-						}
-					}
+						},
+						"description": "Finds existing 1-on-1 conversation or creates a new room with target coach/user."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Chat Room Messages History",
@@ -551,8 +622,10 @@
 							"raw": "{{base_url}}/api/v1/chats/1",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "chats", "1"]
-						}
-					}
+						},
+						"description": "Fetches full message history and marks unread messages as read."
+					},
+					"response": []
 				},
 				{
 					"name": "Send Message (WebSockets Broadcast + Attachment)",
@@ -570,13 +643,16 @@
 							"raw": "{{base_url}}/api/v1/chats/1/messages",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "chats", "1", "messages"]
-						}
-					}
+						},
+						"description": "Sends message and broadcasts a real-time `MessageSent` WebSocket event to the receiver. Rate-limited to 30 messages/minute (`throttle:chat`)."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "08. Invoices & Admin Financial Ledger",
+			"description": "Tax invoices, PDF downloads, and platform revenue audit ledger.",
 			"item": [
 				{
 					"name": "Get Invoice Details",
@@ -587,8 +663,10 @@
 							"raw": "{{base_url}}/api/v1/invoices/1",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "invoices", "1"]
-						}
-					}
+						},
+						"description": "Returns tax invoice line items, tax registration number, and payment verification."
+					},
+					"response": []
 				},
 				{
 					"name": "Download Invoice PDF",
@@ -599,8 +677,10 @@
 							"raw": "{{base_url}}/api/v1/invoices/1/download",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "invoices", "1", "download"]
-						}
-					}
+						},
+						"description": "Streams generated PDF invoice document for offline saving or print."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Financial Ledger API",
@@ -611,14 +691,31 @@
 							"raw": "{{base_url}}/api/v1/admin/payments",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "payments"]
-						}
-					}
+						},
+						"description": "Master revenue and subscription payments ledger for administration."
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "09. Admin Moderation & Infrastructure",
+			"description": "Administrative operations, security audit logs (Spatie Trail), user moderation, trainer recruitment, and gym rules CRUD.",
 			"item": [
+				{
+					"name": "Admin Activity Audit Logs (Spatie Trail)",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json", "type": "string" }],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/activity-logs",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "activity-logs"]
+						},
+						"description": "Retrieves paginated audit trail logs across all 11 core models with formatted changes diff (`old` vs `attributes`)."
+					},
+					"response": []
+				},
 				{
 					"name": "Admin List Users",
 					"request": {
@@ -628,8 +725,10 @@
 							"raw": "{{base_url}}/api/v1/admin/users",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "users"]
-						}
-					}
+						},
+						"description": "Lists all platform users with filtering by role (`admin`, `trainer`, `member`), search, and status."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Toggle User Active Status",
@@ -640,8 +739,10 @@
 							"raw": "{{base_url}}/api/v1/admin/users/1/toggle-active",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "users", "1", "toggle-active"]
-						}
-					}
+						},
+						"description": "Toggles user active/frozen status."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Block Abusive User",
@@ -659,8 +760,10 @@
 							"raw": "{{base_url}}/api/v1/admin/users/1/block",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "users", "1", "block"]
-						}
-					}
+						},
+						"description": "Blocks user account immediately (`is_blocked = true`). Active sessions are terminated by middleware."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Unblock User",
@@ -671,8 +774,10 @@
 							"raw": "{{base_url}}/api/v1/admin/users/1/unblock",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "users", "1", "unblock"]
-						}
-					}
+						},
+						"description": "Unblocks a suspended user."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin List Certified Trainers",
@@ -683,8 +788,10 @@
 							"raw": "{{base_url}}/api/v1/admin/trainers",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "trainers"]
-						}
-					}
+						},
+						"description": "Admin overview of all certified coaches with financial stats and active bookings count."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Recruit Certified Trainer",
@@ -702,8 +809,10 @@
 							"raw": "{{base_url}}/api/v1/admin/trainers",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "trainers"]
-						}
-					}
+						},
+						"description": "Recruits and registers a new certified trainer with session rate and credentials."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Manage Gym Rules (CRUD)",
@@ -714,8 +823,10 @@
 							"raw": "{{base_url}}/api/v1/admin/gym-rules",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "gym-rules"]
-						}
-					}
+						},
+						"description": "Admin CRUD endpoint for gym regulations and rules."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Approve Trainer Payout",
@@ -726,8 +837,10 @@
 							"raw": "{{base_url}}/api/v1/admin/payouts/1/approve",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "payouts", "1", "approve"]
-						}
-					}
+						},
+						"description": "Approves payout request with pessimistic lock, deducts pending payout, and creates a ledger record."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Reject Trainer Payout",
@@ -738,8 +851,10 @@
 							"raw": "{{base_url}}/api/v1/admin/payouts/1/reject",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "payouts", "1", "reject"]
-						}
-					}
+						},
+						"description": "Rejects payout request and unfreezes the amount back to the trainer's available balance."
+					},
+					"response": []
 				},
 				{
 					"name": "Admin Process Booking Refund",
@@ -750,8 +865,10 @@
 							"raw": "{{base_url}}/api/v1/admin/bookings/1/refund",
 							"host": ["{{base_url}}"],
 							"path": ["api", "v1", "admin", "bookings", "1", "refund"]
-						}
-					}
+						},
+						"description": "Manual admin resolution to refund a session for disputed bookings."
+					},
+					"response": []
 				}
 			]
 		}

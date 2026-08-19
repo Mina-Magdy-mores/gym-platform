@@ -82,4 +82,27 @@ class ActivityLogTest extends TestCase
         $this->assertEquals(2800.00, $activity->getProperty('attributes.price', $activity->attribute_changes['attributes']['price'] ?? 2800.00));
         $this->assertEquals(2500.00, $activity->getProperty('old.price', $activity->attribute_changes['old']['price'] ?? 2500.00));
     }
+
+    public function test_admin_can_access_activity_logs_web_dashboard_and_api(): void
+    {
+        $admin = User::factory()->create(['is_active' => true]);
+        $admin->assignRole('admin');
+
+        $member = User::factory()->create(['is_active' => true]);
+        $member->assignRole('member');
+
+        // 1. Admin can access Web UI
+        $response = $this->actingAs($admin)->get(route('admin.activity-logs.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Audit Logs & Security Trail');
+
+        // 2. Member is forbidden from accessing Admin Web UI
+        $memberResponse = $this->actingAs($member)->get(route('admin.activity-logs.index'));
+        $memberResponse->assertStatus(403);
+
+        // 3. Admin can query Activity Logs API
+        $apiResponse = $this->actingAs($admin, 'sanctum')->getJson('/api/v1/admin/activity-logs');
+        $apiResponse->assertStatus(200)
+            ->assertJsonPath('success', true);
+    }
 }

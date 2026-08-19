@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\User\Http\Controllers\Api\ApiAdminActivityLogController;
 use Modules\User\Http\Controllers\Api\ApiAdminUserController;
 use Modules\User\Http\Controllers\Api\ApiAuthController;
 use Modules\User\Http\Controllers\Api\ApiProfileController;
@@ -29,8 +30,11 @@ Route::prefix('v1')->group(function () {
         Route::post('profile', [ApiProfileController::class, 'update']);
         Route::delete('profile/media/{mediaId}', [ApiProfileController::class, 'destroyMedia']);
 
-        // Admin Moderation & Trainer Recruitment Endpoints
+        // Admin Moderation, Activity Logs & Trainer Recruitment Endpoints
         Route::middleware(['role:admin'])->prefix('admin')->group(function () {
+            // Activity Audit Logs API
+            Route::get('activity-logs', [ApiAdminActivityLogController::class, 'index']);
+
             // User Management API
             Route::get('users', [ApiAdminUserController::class, 'index']);
             Route::post('users', [ApiAdminUserController::class, 'store']);

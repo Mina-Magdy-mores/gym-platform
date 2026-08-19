@@ -14,11 +14,13 @@ use Modules\User\Http\Controllers\Auth\PasswordResetLinkController;
 use Modules\User\Http\Controllers\Auth\RegisteredUserController;
 use Modules\User\Http\Controllers\Auth\VerifyEmailController;
 
+use Modules\User\Http\Controllers\Admin\AdminActivityLogController;
 use Modules\User\Http\Controllers\Admin\AdminTrainerController;
 
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(function () {
     Route::resource('users', UserController::class)->names('user');
     Route::get('all-users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('activity-logs', [AdminActivityLogController::class, 'index'])->name('admin.activity-logs.index');
     Route::patch('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('admin.users.toggle-active');
     Route::post('users/{user}/block', [AdminUserController::class, 'block'])->name('admin.users.block');
     Route::post('users/{user}/unblock', [AdminUserController::class, 'unblock'])->name('admin.users.unblock');
