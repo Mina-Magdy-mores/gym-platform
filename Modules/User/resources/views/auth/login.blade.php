@@ -8,6 +8,10 @@
         fill(e, p) {
             this.email = e;
             this.password = p;
+            const em = document.getElementById('email');
+            const pw = document.getElementById('password');
+            if (em) { em.value = e; em.dispatchEvent(new Event('input', { bubbles: true })); }
+            if (pw) { pw.value = p; pw.dispatchEvent(new Event('input', { bubbles: true })); }
         }
     }" class="space-y-6">
 
@@ -26,6 +30,7 @@
                 <button 
                     type="button" 
                     @click="fill('mina@gym.com', 'password123')"
+                    onclick="document.getElementById('email').value='mina@gym.com'; document.getElementById('password').value='password123';"
                     class="p-2 rounded-xl bg-[#12141c] hover:bg-neon-gradient border border-white/5 hover:border-transparent text-left transition group shadow-sm cursor-pointer"
                 >
                     <div class="flex items-center gap-1.5 text-xs font-black text-white group-hover:text-white">
@@ -39,6 +44,7 @@
                 <button 
                     type="button" 
                     @click="fill('ahmed.trainer@fitclub.com', 'password123')"
+                    onclick="document.getElementById('email').value='ahmed.trainer@fitclub.com'; document.getElementById('password').value='password123';"
                     class="p-2 rounded-xl bg-[#12141c] hover:bg-neon-gradient border border-white/5 hover:border-transparent text-left transition group shadow-sm cursor-pointer"
                 >
                     <div class="flex items-center gap-1.5 text-xs font-black text-white group-hover:text-white">
@@ -52,6 +58,7 @@
                 <button 
                     type="button" 
                     @click="fill('member@fitclub.com', 'password123')"
+                    onclick="document.getElementById('email').value='member@fitclub.com'; document.getElementById('password').value='password123';"
                     class="p-2 rounded-xl bg-[#12141c] hover:bg-neon-gradient border border-white/5 hover:border-transparent text-left transition group shadow-sm cursor-pointer"
                 >
                     <div class="flex items-center gap-1.5 text-xs font-black text-white group-hover:text-white">
