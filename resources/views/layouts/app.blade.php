@@ -146,49 +146,12 @@
         <div x-data="{
             toastMessage: null,
             showToast: false,
-            init() {
-                // Initialize Alpine Store Count on Page Load
-                if (window.Alpine && Alpine.store('unreadChat')) {
-                    Alpine.store('unreadChat').setCount({{ auth()->check() ? (new \Modules\Chat\Services\ChatService())->getTotalUnreadCount(auth()->id()) : 0 }});
-                }
-
-                if (window.Echo && {{ auth()->check() ? 'true' : 'false' }}) {
-                    // 1. Join Community Presence Channel for Live Online/Offline Status
-                    window.Echo.join('gym-community')
-                        .here((users) => {
-                            if (window.Alpine && Alpine.store('presence')) {
-                                Alpine.store('presence').setOnline(users);
-                            }
-                        })
-                        .joining((user) => {
-                            if (window.Alpine && Alpine.store('presence')) {
-                                Alpine.store('presence').add(user);
-                            }
-                        })
-                        .leaving((user) => {
-                            if (window.Alpine && Alpine.store('presence')) {
-                                Alpine.store('presence').remove(user);
-                            }
-                        });
-
-                    // 2. Private User Channel for Chat & Notifications
-                    window.Echo.private('user.{{ auth()->id() }}')
-                        .listen('.message.sent', (data) => {
-                            // Update global Alpine store dynamically
-                            if (window.Alpine && Alpine.store('unreadChat')) {
-                                Alpine.store('unreadChat').increment();
-                            }
-
-                            // Broadcast custom event for live index updates
-                            window.dispatchEvent(new CustomEvent('chat-message-received', { detail: data }));
-
-                            if (!window.location.pathname.includes('/chats/' + data.conversation_id)) {
-                                this.toastMessage = data;
-                                this.showToast = true;
-                                this.playNotificationPing();
-                                setTimeout(() => { this.showToast = false; }, 6000);
-                            }
-                        });
+            handleIncomingChat(data) {
+                if (!window.location.pathname.includes('/chats/' + data.conversation_id)) {
+                    this.toastMessage = data;
+                    this.showToast = true;
+                    this.playNotificationPing();
+                    setTimeout(() => { this.showToast = false; }, 6000);
                 }
             },
             playNotificationPing() {
@@ -198,15 +161,15 @@
                     const gain = ctx.createGain();
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(880, ctx.currentTime);
-                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.4);
-                } catch(e) {}
+                    osc.stop(ctx.currentTime + 0.25);
+                } catch (e) {}
             }
-        }">
+        }" @chat-message-received.window="handleIncomingChat($event.detail)">
             <div x-show="showToast" x-transition.opacity.scale.90 class="fixed top-5 right-5 z-[9999] max-w-sm w-full glass-card p-4 rounded-2xl border border-[#ff5b00]/50 bg-[#12141c]/95 shadow-[0_20px_50px_rgba(255,91,0,0.3)] backdrop-blur-xl flex items-start gap-3.5" x-cloak>
                 <div class="w-10 h-10 rounded-xl bg-neon-gradient flex items-center justify-center text-white font-black text-sm uppercase shrink-0 overflow-hidden">
                     <template x-if="toastMessage && toastMessage.sender_avatar">

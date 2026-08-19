@@ -15,11 +15,11 @@
             $otherUser = (auth()->id() === $c->athlete_id) 
                 ? ($c->trainer ?? \App\Models\User::role('admin')->first()) 
                 : $c->athlete;
-            $cleanName = preg_replace('/[^\p{L}\p{N}]/u', '', $otherUser->name ?? 'User');
+            $cleanName = preg_replace('/[^\p{L}\p{N}]/u', '', $otherUser?->name ?? 'User');
             return [
                 'id' => $c->id,
-                'other_id' => $otherUser->id,
-                'other_name' => $otherUser->name ?? 'User',
+                'other_id' => $otherUser?->id,
+                'other_name' => $otherUser?->name ?? 'User',
                 'other_initial' => strtoupper(mb_substr($cleanName, 0, 1)) ?: 'U',
                 'other_avatar' => ($otherUser && $otherUser->hasMedia('avatar')) ? $otherUser->getFirstMediaUrl('avatar', 'thumb') : null,
                 'type' => $c->type,

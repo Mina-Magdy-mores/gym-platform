@@ -17,9 +17,22 @@ class ChatService
      */
     public function getUserConversations(User $user): Collection
     {
-        return Conversation::with(['athlete', 'trainer', 'latestMessage.sender'])
-            ->where('athlete_id', $user->id)
-            ->orWhere('trainer_id', $user->id)
+        $query = Conversation::with(['athlete', 'trainer', 'latestMessage.sender']);
+
+        if ($user->hasRole('admin')) {
+            $query->where(function ($q) use ($user) {
+                $q->where('athlete_id', $user->id)
+                  ->orWhere('trainer_id', $user->id)
+                  ->orWhere('type', 'support');
+            });
+        } else {
+            $query->where(function ($q) use ($user) {
+                $q->where('athlete_id', $user->id)
+                  ->orWhere('trainer_id', $user->id);
+            });
+        }
+
+        return $query->whereNotNull('last_message_at')
             ->orderBy('last_message_at', 'desc')
             ->get();
     }
