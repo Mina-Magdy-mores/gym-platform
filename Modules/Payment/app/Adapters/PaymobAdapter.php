@@ -16,10 +16,10 @@ class PaymobAdapter implements PaymentGatewayInterface
 
     public function __construct()
     {
-        $this->apiKey = config('services.paymob.api_key', env('PAYMOB_API_KEY'));
-        $this->integrationId = config('services.paymob.integration_id', env('PAYMOB_INTEGRATION_ID'));
-        $this->iframeId = config('services.paymob.iframe_id', env('PAYMOB_IFRAME_ID'));
-        $this->hmacSecret = config('services.paymob.hmac_secret', env('PAYMOB_HMAC_SECRET'));
+        $this->apiKey = trim((string) (config('services.paymob.api_key', env('PAYMOB_API_KEY')) ?? ''));
+        $this->integrationId = trim((string) (config('services.paymob.integration_id', env('PAYMOB_INTEGRATION_ID')) ?? ''));
+        $this->iframeId = trim((string) (config('services.paymob.iframe_id', env('PAYMOB_IFRAME_ID')) ?? ''));
+        $this->hmacSecret = trim((string) (config('services.paymob.hmac_secret', env('PAYMOB_HMAC_SECRET')) ?? ''));
         $this->baseUrl = 'https://accept.paymob.com/api';
     }
 
