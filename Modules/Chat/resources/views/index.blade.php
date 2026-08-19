@@ -58,37 +58,38 @@
                         <span class="text-[10px] text-gray-400 font-mono">1-Click Instant Message</span>
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                         @foreach($availableContacts as $contact)
-                            <a href="{{ route('chat.start', $contact->id) }}" class="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#ff5b00]/50 transition text-center group flex flex-col items-center gap-2">
+                            <a href="{{ route('chat.start', $contact->id) }}" class="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-[#ff5b00]/50 transition flex items-center gap-3 group shadow-sm cursor-pointer">
                                 <div class="relative shrink-0 flex items-center justify-center">
                                     @if($contact->hasMedia('avatar'))
-                                        <img src="{{ $contact->getFirstMediaUrl('avatar', 'thumb') }}" alt="{{ $contact->name }}" class="w-12 h-12 rounded-xl object-cover border border-white/10 group-hover:border-[#ff5b00] transition">
+                                        <img src="{{ $contact->getFirstMediaUrl('avatar', 'thumb') }}" alt="{{ $contact->name }}" class="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:border-[#ff5b00] transition">
                                     @else
                                         @php
                                             $cleanName = preg_replace('/[^\p{L}\p{N}]/u', '', $contact->name);
                                             $initial = strtoupper(mb_substr($cleanName, 0, 1)) ?: 'U';
                                         @endphp
-                                        <div class="w-12 h-12 rounded-xl bg-neon-gradient flex items-center justify-center text-white font-black text-sm uppercase shadow-md leading-none">
+                                        <div class="w-10 h-10 rounded-xl bg-neon-gradient flex items-center justify-center text-white font-black text-xs uppercase shadow-md leading-none shrink-0">
                                             {{ $initial }}
                                         </div>
                                     @endif
 
                                     <!-- Live Dynamic Presence Indicator Dot -->
                                     <span
-                                        :class="($store.presence && $store.presence.isOnline({{ $contact->id }})) ? 'bg-emerald-500 shadow-md shadow-emerald-500/50 animate-pulse' : 'bg-gray-500/60 opacity-50'"
-                                        class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#12141c] transition-all duration-300"
+                                        :class="($store.presence && $store.presence.isOnline({{ $contact->id }})) ? 'bg-emerald-500 shadow-md shadow-emerald-500/50 animate-pulse' : 'bg-gray-600'"
+                                        class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#12141c] transition-all duration-300"
                                         :title="($store.presence && $store.presence.isOnline({{ $contact->id }})) ? 'Online Now' : 'Offline'"
                                     ></span>
                                 </div>
                                 
-                                <div class="w-full truncate">
+                                <div class="min-w-0 flex-1">
                                     <h4 class="text-xs font-black text-white group-hover:text-[#ff5b00] transition truncate">{{ $contact->name }}</h4>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider block truncate flex items-center justify-center gap-1">
-                                        <span>{{ $contact->getRoleNames()->first() ?? 'Member' }}</span>
-                                        <span x-show="$store.presence && $store.presence.isOnline({{ $contact->id }})" class="text-emerald-400 text-[8px] font-mono">(Online)</span>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block truncate">
+                                        {{ $contact->getRoleNames()->first() ?? 'Member' }}
                                     </span>
                                 </div>
+
+                                <i class="ri-chat-new-line text-gray-500 group-hover:text-[#ff5b00] text-sm shrink-0 transition"></i>
                             </a>
                         @endforeach
                     </div>
