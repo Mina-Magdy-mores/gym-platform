@@ -35,11 +35,11 @@
                 $isTrainer = Auth::user()->hasRole('trainer');
             @endphp
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
                 
                 @if(!$isTrainer)
                     <!-- Book Session Form for Members (4 Columns - Compact Side Display) -->
-                    <div class="lg:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6">
+                    <div class="lg:col-span-4 glass-card p-6 rounded-2xl border border-white/5 space-y-6 w-full">
                         <div class="space-y-1 pb-4 border-b border-white/10">
                             <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">
                                 <i class="ri-calendar-check-line neon-accent"></i> Book a Session
@@ -124,7 +124,7 @@
                 @endif
 
                 <!-- Bookings List Display (12 Cols for Trainer, 8 Cols for Member) -->
-                <div class="{{ $isTrainer ? 'lg:col-span-12' : 'lg:col-span-8' }} glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
+                <div class="{{ $isTrainer ? 'lg:col-span-12' : 'lg:col-span-8' }} glass-card p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6 w-full">
                     <div class="flex items-center justify-between pb-4 border-b border-white/10">
                         <div>
                             <h3 class="text-xl font-bold text-white uppercase flex items-center gap-2">

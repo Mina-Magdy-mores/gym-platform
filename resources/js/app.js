@@ -66,10 +66,30 @@ document.addEventListener('alpine:init', () => {
         Alpine.store('unreadNotifications').setCount(parseInt(metaNotif.content) || 0);
     }
 
-    // ─── Real-Time Chat Bell: Listen on the user's private channel ───
+    // ─── Real-Time Chat Bell & Community Presence ───
     const metaUserId = document.querySelector('meta[name="auth-user-id"]');
     if (metaUserId && window.Echo) {
         const userId = metaUserId.content;
+
+        // 1. Join Community Presence Channel for Live Online/Offline Status
+        window.Echo.join('gym-community')
+            .here((users) => {
+                if (window.Alpine && Alpine.store('presence')) {
+                    Alpine.store('presence').setOnline(users);
+                }
+            })
+            .joining((user) => {
+                if (window.Alpine && Alpine.store('presence')) {
+                    Alpine.store('presence').add(user);
+                }
+            })
+            .leaving((user) => {
+                if (window.Alpine && Alpine.store('presence')) {
+                    Alpine.store('presence').remove(user);
+                }
+            });
+
+        // 2. Private User Channel for Chat & Notifications
         window.Echo.private(`user.${userId}`)
 
             // ── Chat: new message received ──

@@ -307,7 +307,7 @@ public function executeSubscriptionAction(User $user, SubscriptionPlan $newPlan,
         // Dispatch real-time notification to Member and platform Admins on plan upgrade
         Notification::send($user, new PlanUpgradedNotification($activeSub));
 
-        $admins = User::role('Admin')->get();
+        $admins = User::role('admin')->get();
         if ($admins->isNotEmpty()) {
             Notification::send($admins, new PlanUpgradedNotification($activeSub));
         }

@@ -92,7 +92,7 @@ class PaymentService
             ]);
 
             // Dispatch instant real-time notification to all platform Admins
-            $admins = User::role('Admin')->get();
+            $admins = User::role('admin')->get();
             if ($admins->isNotEmpty() && isset($userSub)) {
                 Notification::send($admins, new NewMemberSubscribedNotification($userSub));
             }
@@ -249,7 +249,7 @@ class PaymentService
                     ]);
 
                     // Dispatch instant real-time notification to all platform Admins on Webhook execution
-                    $admins = User::role('Admin')->get();
+                    $admins = User::role('admin')->get();
                     if ($admins->isNotEmpty() && isset($userSub)) {
                         Notification::send($admins, new NewMemberSubscribedNotification($userSub));
                     }
