@@ -163,7 +163,7 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 FILESYSTEM_DISK=public
-QUEUE_CONNECTION=sync
+QUEUE_CONNECTION=database
 ```
 
 ### 4. 1-Click Database Setup & Seeding
