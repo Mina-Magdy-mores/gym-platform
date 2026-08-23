@@ -1,36 +1,38 @@
 <p align="center">
-  <a href="https://fitclub.laravel.cloud" target="_blank">
-    <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="FIT CLUB Platform">
-  </a>
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="FIT CLUB Platform">
 </p>
 
 <h1 align="center">🏋️‍♂️ FIT CLUB - Enterprise Gym & Fitness Coaching Platform</h1>
 
 <p align="center">
-  <strong>A modern, high-performance SaaS platform for gym memberships, private coach bookings, trainer wallets, custom diet/workout protocols, real-time WebSockets chat, and immutable audit logs.</strong>
+  <strong>A modern, high-concurrency SaaS platform for gym memberships, private coach bookings, trainer wallets, custom diet/workout split protocols, real-time WebSockets chat, multi-gateway payments, and immutable audit logs.</strong>
 </p>
 
 <p align="center">
+  <a href="https://github.com/Mina-Magdy-mores/gym-platform/actions/workflows/ci.yml">
+    <img src="https://github.com/Mina-Magdy-mores/gym-platform/actions/workflows/ci.yml/badge.svg" alt="CI Pipeline Status">
+  </a>
   <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
   <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2+">
   <img src="https://img.shields.io/badge/Architecture-Modular%20DDD-00D1B2?style=for-the-badge" alt="Modular Architecture">
   <img src="https://img.shields.io/badge/Tests-46%2F46%20Passed-10B981?style=for-the-badge&logo=pest&logoColor=white" alt="Automated Tests">
   <img src="https://img.shields.io/badge/APIs-55%20Endpoints-3B82F6?style=for-the-badge&logo=postman&logoColor=white" alt="Postman Collection">
-  <img src="https://img.shields.io/badge/Deployment-Laravel%20Cloud-FF5B00?style=for-the-badge&logo=icloud&logoColor=white" alt="Laravel Cloud">
+  <img src="https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge" alt="License MIT">
 </p>
 
 ---
 
 ## 🌟 Executive Summary & Key Highlights
 
-**FIT CLUB** is built with **Enterprise Clean Architecture** to handle high-concurrency fitness operations with zero financial discrepancies, race conditions, or unauthorized access.
+**FIT CLUB** is architected using **Domain-Driven Modular Clean Architecture** to handle high-volume fitness club operations with zero financial discrepancies, race conditions, or unauthorized access.
 
 - **🎨 Dark Neon Gym Aesthetic:** Modern, high-conversion UI built with Tailwind CSS, Alpine.js, and Remix Icons.
 - **🛡️ Concurrency & Double-Submit Defense:** Dual-layer protection using **Pessimistic Database Locks** (`lockForUpdate`) and **Atomic Cache Locks** (`Cache::lock`) across subscriptions, PT session bookings, and trainer payouts.
+- **💳 Multi-Gateway Payment Engine:** Extensible **Adapter & Strategy Pattern** supporting **Paymob (Cards / Wallets)**, **Stripe**, and local **Mock Payment Gateway** with HMAC verification.
 - **📊 Immutable Security Audit Trail:** Powered by **Spatie Activity Log v5** across 11 core models with visual side-by-side **Old vs New value change diffs**.
-- **⚡ Real-Time WebSockets Engine:** Instant coach-to-athlete 1-on-1 chat and notifications using **Laravel Reverb / Pusher**.
+- **⚡ Real-Time WebSockets Engine:** Instant 1-on-1 coach-to-athlete chat, live community presence channel, and sound-enabled toast notifications via **Laravel Echo & Pusher**.
 - **📱 100% Web-to-API Parity:** 55 fully documented RESTful API endpoints ready for **Flutter / React Native** mobile apps and headless **Next.js** frontends.
-- **🧪 100% Automated Test Coverage:** 46 Pest/PHPUnit feature test suites verifying all critical financial, booking, and security workflows.
+- **🧪 100% Automated Test Coverage:** 46 Pest/PHPUnit feature test suites verifying all critical financial, booking, and security workflows with automated GitHub Actions CI.
 
 ---
 
@@ -50,14 +52,14 @@ graph TD
 ```
 
 ### 1. 🛡️ User & Role Governance (`Modules/User`)
-- Strict Role-Based Access Control (**Spatie Permission**): `Admin`, `Trainer`, `Member`, and `Guest`.
+- Strict Role-Based Access Control (**Spatie Permission**): `Admin`, `Trainer`, and `Member`.
 - Immediate account suspension and session termination via `CheckUserBlocked` middleware.
 - Profile management and media attachment library (**Spatie MediaLibrary**).
 
 ### 2. 💳 Subscriptions & Benefit Quotas Engine (`Modules/Subscription`)
-- 7-Benefit real-time quota tracking: Personal Training sessions, InBody scans, Kickboxing classes, Guest invitations, Freeze days, and Nutrition plans.
+- **7-Benefit Quota System:** Personal Training sessions, InBody scans, Kickboxing classes, Guest invitations, Freeze days, and Nutrition plans.
 - **7-Day Plan Upgrade Rule:** Members can upgrade to higher tiers within 7 days by paying only the price difference.
-- Protected by Atomic Cache Locks to prevent duplicate billing during rapid double-clicks.
+- **Atomic Cache Locking:** Prevents double-billing during rapid double-click submissions.
 
 ### 3. 📅 Private PT Bookings & Concurrency Shield (`Modules/Subscription`)
 - Pessimistic locking prevents simultaneous slot overlapping for the same trainer.
@@ -71,13 +73,14 @@ graph TD
 - Digital printable payout vouchers with unique reference codes.
 
 ### 5. 🏋️‍♂️ Custom Workout & Nutrition Generators (`Modules/Workout`)
-- Coaches can build multi-day split routines with target muscles, exercise names, sets, reps, and rest intervals.
+- Multi-day push/pull/legs split routines with target muscles, exercise names, sets, reps, and rest intervals.
 - Customized macro-calculated diet plans with daily calories, protein, carbs, fats, and scheduled meals.
-- Coach athlete roster for easy trainee assignment.
+- Coach athlete roster for seamless trainee assignment.
 
-### 6. 💬 Real-Time Chat & WebSockets (`Modules/Chat`)
+### 6. 💬 Real-Time Chat & Community Presence (`Modules/Chat`)
 - 1-on-1 real-time messaging between members and coaches with image attachments.
-- Event broadcasting (`MessageSent`) via private channels with rate limiting (`throttle:chat`).
+- Community presence channel (`gym-community`) tracking live online/offline active sessions.
+- Rate limiting (`throttle:chat`) to prevent spamming.
 
 ### 7. 🧾 Invoices & Financial Ledger (`Modules/Payment`)
 - Auto-generated tax invoices with printable PDF downloads (**Barryvdh DomPDF**).
@@ -91,7 +94,7 @@ graph TD
 
 ## 🧪 Automated Testing Suite (46 / 46 Green Tests)
 
-Run the full automated testing suite:
+Run the complete automated test suite locally:
 
 ```bash
 php artisan test
@@ -100,12 +103,12 @@ php artisan test
 ### ✅ Test Coverage Breakdown:
 | Test Suite | Focus Area | Status |
 | :--- | :--- | :--- |
-| `AuthAndRolesTest` | Member role assignment, guest redirects, blocked user middleware lockout | **PASSED** ✅ |
-| `SubscriptionPurchaseTest` | Plan activation, 7 benefit counters initialization, 7-day upgrade price difference | **PASSED** ✅ |
+| `AuthAndRolesTest` | Member role assignment, guest redirects, blocked user lockout | **PASSED** ✅ |
+| `SubscriptionPurchaseTest` | Plan activation, 7 benefit counters, 7-day upgrade price difference | **PASSED** ✅ |
 | `BookingCollisionTest` | Concurrency pessimistic locks preventing double bookings on identical slots | **PASSED** ✅ |
 | `BookingCancellationRefundTest` | 100% quota restoration >24h vs non-refundable <24h policy | **PASSED** ✅ |
 | `TrainerWalletAndPayoutTest` | 85/15 commission credit, payout balance freezing, admin approval settlement | **PASSED** ✅ |
-| `GymRulesAndCacheTest` | Rule ordering, active status filtering, automated cache invalidation | **PASSED** ✅ |
+| `GymRulesAndCacheTest` | 16 Gym rules ordering, active status filtering, cache invalidation | **PASSED** ✅ |
 | `ActivityLogTest` | User moderation, plan price changes audit trail, Admin UI & API access | **PASSED** ✅ |
 | `RateLimitingTest` | Throttling login after 5 attempts, blocking 6th with HTTP 429 | **PASSED** ✅ |
 | `WorkoutAndChatApiTest` | Workout/diet assignment via API, WebSocket chat initialization & messaging | **PASSED** ✅ |
@@ -122,36 +125,35 @@ The repository includes a production-ready Postman collection with **55 endpoint
 ### 🚀 How to import in Postman:
 1. Open **Postman** and click **Import**.
 2. Select `gym_platform_postman_collection.json`.
-3. Set your `base_url` variable (e.g. `http://127.0.0.1:8000` or `https://fitclub.laravel.cloud`).
+3. Set your `base_url` variable (e.g. `http://127.0.0.1:8000` or `http://gym-platform.test`).
 4. Execute `02. Authentication / Login` — the Bearer Token is automatically captured and injected into all subsequent requests!
 
 ---
 
-## 🛠️ Local Installation & Setup
+## 🛠️ Quick Start & Local Setup
 
 ### 1. Prerequisites
 - **PHP:** 8.2 or higher
 - **Composer:** 2.x
 - **Node.js:** 18.x or higher & NPM
-- **Database:** MySQL 8.0+ or PostgreSQL
-- **Cache / Queue:** Redis or Database
+- **Database:** MySQL 8.0+
 
-### 2. Clone and Install Dependencies
+### 2. Clone & Install Dependencies
 ```bash
-git clone https://github.com/YOUR_USERNAME/gym-platform.git
+git clone https://github.com/Mina-Magdy-mores/gym-platform.git
 cd gym-platform
 
 composer install
 npm install
 ```
 
-### 3. Environment Configuration
+### 3. Environment Setup
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-Configure your database and queue credentials in `.env`:
+Configure your database credentials in `.env`:
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -160,48 +162,36 @@ DB_DATABASE=gym_platform
 DB_USERNAME=root
 DB_PASSWORD=
 
-CACHE_STORE=database
-QUEUE_CONNECTION=database
+FILESYSTEM_DISK=public
+QUEUE_CONNECTION=sync
 ```
 
-### 4. Run Migrations & Seeders
+### 4. 1-Click Database Setup & Seeding
 ```bash
-php artisan migrate --seed
+php artisan migrate:fresh --seed
 php artisan storage:link
 ```
 
-### 5. Compile Assets & Run Development Servers
+### 5. Build Assets & Start Server
 ```bash
-# Terminal 1 (Frontend Vite Build)
-npm run dev
-
-# Terminal 2 (Backend Server)
+npm run build
 php artisan serve
 ```
 
-Default Admin Credentials:
-- **Email:** `mina@gym.com`
-- **Password:** `password123`
-
 ---
 
-## ☁️ Deployment on Laravel Cloud
+## 🔑 Demo Access Credentials
 
-1. Push this repository to your **GitHub** account.
-2. Log in to your **[Laravel Cloud](https://cloud.laravel.com)** console.
-3. Click **New Application** and select this repository (`gym-platform`).
-4. Configure production environment variables (`APP_KEY`, `DB_*`, `SANCTUM_STATEFUL_DOMAINS`).
-5. Set the Pre-deployment command:
-   ```bash
-   php artisan migrate --force
-   php artisan test
-   ```
-6. Click **Deploy Now**! 🚀
+| Role | Email | Password | Primary Capabilities |
+| :--- | :--- | :--- | :--- |
+| **Master Admin** | `mina@gym.com` | `password123` | Master control, audit logs, financial ledger, user moderation, plans & rules |
+| **Certified Trainer** | `trainer@fitclub.com` | `password123` | Athlete roster, workout split builder, diet plans, wallet earnings & payouts |
+| **Platform Member** | `member@fitclub.com` | `password123` | Plan purchase/upgrade, PT booking, workout & diet views, live chat |
 
 ---
 
 ## 📄 License
-This project is open-sourced software licensed under the **MIT License**.
+This project is open-sourced software licensed under the **[MIT License](LICENSE)**.
 
 ---
-*Built with ❤️ & Enterprise Clean Architecture for FIT CLUB.*
+*Built with ❤️ & Enterprise Clean Architecture by Mina Magdy.*

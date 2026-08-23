@@ -67,5 +67,8 @@ class DatabaseSeeder extends Seeder
 
         // 6. Seed Certified Trainers
         $this->call(TrainerSeeder::class);
+
+        // 7. Seed Demo Workout Routines & Nutrition Plans
+        $this->call(\Modules\Workout\Database\Seeders\WorkoutDatabaseSeeder::class);
     }
 }
