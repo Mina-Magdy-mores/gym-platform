@@ -94,7 +94,7 @@ class ActivityLogTest extends TestCase
         // 1. Admin can access Web UI
         $response = $this->actingAs($admin)->get(route('admin.activity-logs.index'));
         $response->assertStatus(200);
-        $response->assertSee('Audit Logs & Security Trail');
+        $response->assertSeeText('Audit Logs & Security Trail');
 
         // 2. Member is forbidden from accessing Admin Web UI
         $memberResponse = $this->actingAs($member)->get(route('admin.activity-logs.index'));
