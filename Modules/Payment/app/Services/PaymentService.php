@@ -91,10 +91,12 @@ class PaymentService
                 'payload' => $response->rawPayload,
             ]);
 
-            // Dispatch instant real-time notification to all platform Admins
-            $admins = User::role('admin')->get();
-            if ($admins->isNotEmpty() && isset($userSub)) {
-                Notification::send($admins, new NewMemberSubscribedNotification($userSub));
+            // Dispatch instant real-time notification to all platform Admins only on new subscription
+            if (($prep['action'] ?? 'new') === 'new') {
+                $admins = User::role('admin')->get();
+                if ($admins->isNotEmpty() && isset($userSub)) {
+                    Notification::send($admins, new NewMemberSubscribedNotification($userSub));
+                }
             }
         });
 
@@ -248,10 +250,12 @@ class PaymentService
                         'payload' => $rawPayload,
                     ]);
 
-                    // Dispatch instant real-time notification to all platform Admins on Webhook execution
-                    $admins = User::role('admin')->get();
-                    if ($admins->isNotEmpty() && isset($userSub)) {
-                        Notification::send($admins, new NewMemberSubscribedNotification($userSub));
+                    // Dispatch instant real-time notification to all platform Admins only on new subscription
+                    if ($action === 'new') {
+                        $admins = User::role('admin')->get();
+                        if ($admins->isNotEmpty() && isset($userSub)) {
+                            Notification::send($admins, new NewMemberSubscribedNotification($userSub));
+                        }
                     }
                 }
             });

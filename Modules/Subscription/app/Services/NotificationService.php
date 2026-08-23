@@ -42,7 +42,7 @@ class NotificationService
     public function markAllAsRead(User $user): int
     {
         $unreadCount = $user->unreadNotifications()->count();
-        $user->unreadNotifications->markAsRead();
+        $user->unreadNotifications()->update(['read_at' => now()]);
 
         return $unreadCount;
     }

@@ -73,13 +73,13 @@
                                     <td class="p-3 text-gray-400">
                                         {{ $pl->free_days }} Free Days, {{ $pl->freeze_days }} Freeze Days, {{ $pl->inbody_scans }} InBody
                                     </td>
-                                    <td class="p-3">
+                                    <td class="p-3 whitespace-nowrap">
                                         @if($pl->is_featured)
-                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30">
-                                                ★ FEATURED OFFER
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 whitespace-nowrap shadow-sm">
+                                                <i class="ri-star-fill text-[#ff5b00] text-xs"></i> Featured Offer
                                             </span>
                                         @else
-                                            <span class="text-gray-500 text-[10px] font-bold">Standard</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-gray-400 text-[10px] font-bold bg-white/5 border border-white/5 whitespace-nowrap">Standard</span>
                                         @endif
                                     </td>
                                     <td class="p-3">

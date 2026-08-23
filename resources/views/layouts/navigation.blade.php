@@ -25,6 +25,7 @@
                     </a>
 
                     <!-- Role Badge Indicator -->
+                    @auth
                     <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-black uppercase text-gray-300 flex items-center gap-1.5">
                         @if(Auth::user()->hasRole('admin'))
                             <i class="ri-shield-user-line text-red-500"></i> Admin Panel
@@ -34,6 +35,11 @@
                             <i class="ri-user-smile-line text-emerald-400"></i> Member Portal
                         @endif
                     </span>
+                    @else
+                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-black uppercase text-gray-300 flex items-center gap-1.5">
+                        <i class="ri-shield-flash-line text-[#ff5b00]"></i> Guest Portal
+                    </span>
+                    @endauth
                 </div>
             </div>
 
@@ -63,6 +69,7 @@
                 </a>
                 @endauth
 
+                @auth
                 <!-- Notifications Dropdown -->
                 <div class="flex items-center">
                     <x-dropdown align="right" width="w-80" content-classes="py-0 bg-[#12141c] border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden">
@@ -84,18 +91,39 @@
                         </x-slot>
 
                         <x-slot name="content">
-                            <div x-data="{ liveNotifs: [] }" @notification-received.window="liveNotifs.unshift($event.detail)">
+                            <div x-data="{ 
+                                liveNotifs: [],
+                                allMarkedRead: false,
+                                async markAllAsRead() {
+                                    this.allMarkedRead = true;
+                                    if ($store.unreadNotifications) {
+                                        $store.unreadNotifications.markAllRead();
+                                    }
+                                    try {
+                                        await fetch('{{ route('notifications.mark-all-read') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Accept': 'application/json',
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                                    } catch (e) {
+                                        console.error('Mark all read error', e);
+                                    }
+                                }
+                            }" @notification-received.window="liveNotifs.unshift($event.detail); allMarkedRead = false;">
                                 <div class="px-4 py-3 border-b border-white/10 flex justify-between items-center bg-[#1a1d28]/80">
                                     <span class="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
                                         <i class="ri-notification-3-line text-[#ff5b00]"></i> Notifications
                                     </span>
-                                    <template x-if="$store.unreadNotifications && $store.unreadNotifications.count > 0">
-                                        <form action="{{ route('notifications.mark-all-read') }}" method="POST"
-                                              @submit="$store.unreadNotifications.markAllRead()">
-                                            @csrf
-                                            <button type="submit" class="text-[10px] text-[#ff5b00] hover:text-white transition font-bold cursor-pointer uppercase tracking-wider">Mark all read</button>
-                                        </form>
-                                    </template>
+                                    <button 
+                                        type="button"
+                                        x-show="($store.unreadNotifications && $store.unreadNotifications.count > 0) || ({{ Auth::user()->unreadNotifications()->count() }} > 0 && !allMarkedRead)"
+                                        @click="markAllAsRead()"
+                                        class="text-[10px] text-[#ff5b00] hover:text-white transition font-bold cursor-pointer uppercase tracking-wider">
+                                        Mark all read
+                                    </button>
                                 </div>
 
                                 <div class="max-h-72 overflow-y-auto divide-y divide-white/5 bg-[#12141c]">
@@ -104,7 +132,7 @@
                                         <div class="p-3.5 bg-white/[0.06] text-white hover:bg-white/10 transition duration-150 flex items-start justify-between gap-3 overflow-hidden border-l-2 border-[#ff5b00]">
                                             <div class="flex-1 min-w-0 space-y-1">
                                                 <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap break-words">
-                                                    <span class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0 animate-ping"></span>
+                                                    <span x-show="!allMarkedRead" class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0 animate-ping"></span>
                                                     <span class="break-words" x-text="notif.title || 'New Notification'"></span>
                                                 </div>
                                                 <div class="text-[11px] text-gray-200 leading-snug break-words font-medium" x-text="notif.message"></div>
@@ -121,7 +149,7 @@
                                             <div class="flex-1 min-w-0 space-y-1">
                                                 <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap break-words">
                                                     @if(!$notification->read_at)
-                                                        <span class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0"></span>
+                                                        <span x-show="!allMarkedRead" class="w-2 h-2 rounded-full bg-[#ff5b00] inline-block shadow-[0_0_8px_#ff5b00] flex-shrink-0"></span>
                                                     @endif
                                                     <span class="break-words">{{ $notification->data['title'] ?? 'Notification' }}</span>
                                                 </div>
@@ -215,6 +243,17 @@
                         </x-slot>
                     </x-dropdown>
                 </div>
+                @else
+                <!-- Guest Actions -->
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('login') }}" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 transition">
+                        Log In
+                    </a>
+                    <a href="{{ route('register') }}" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-neon-gradient hover:opacity-90 transition shadow-md">
+                        Sign Up
+                    </a>
+                </div>
+                @endauth
             </div>
         </div>
     </div>

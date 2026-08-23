@@ -40,9 +40,13 @@ class NotificationController extends Controller
     /**
      * Mark all user notifications as read and return back.
      */
-    public function markAllAsRead(Request $request): RedirectResponse
+    public function markAllAsRead(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->notificationService->markAllAsRead($request->user());
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true]);
+        }
 
         return back()->with('success', 'All notifications marked as read.');
     }

@@ -19,8 +19,8 @@
                         <p class="text-xs text-gray-400">Update subscription plan details, pricing, and benefits.</p>
                     </div>
                     @if($plan->is_featured)
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30">
-                            ★ FEATURED OFFER
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-[#ff5b00]/20 text-[#ff5b00] border border-[#ff5b00]/30 whitespace-nowrap shadow-sm">
+                            <i class="ri-star-fill text-[#ff5b00] text-xs"></i> Featured Offer
                         </span>
                     @endif
                 </div>
